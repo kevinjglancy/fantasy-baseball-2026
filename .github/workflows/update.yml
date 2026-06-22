@@ -38,11 +38,11 @@ jobs:
           echo "SWID=${{ secrets.SWID }}" > .env
           echo "ESPN_S2=${{ secrets.ESPN_S2 }}" >> .env
 
-      - name: Collect today's player stats
+      - name: Collect yesterday's player stats
         working-directory: code
         run: |
-          TODAY=$(date +'%Y-%m-%d')
-          python collect_player_daily.py --league-id 94668654 --start-date $TODAY --end-date $TODAY
+          YESTERDAY=$(date -d "yesterday" +'%Y-%m-%d')
+          python collect_player_daily.py --league-id 94668654 --start-date $YESTERDAY --end-date $YESTERDAY
 
       - name: Collect weekly matchup stats (Mondays only)
         if: github.event.schedule == '0 14 * * 1' || github.event_name == 'workflow_dispatch'
