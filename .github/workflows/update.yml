@@ -1,0 +1,80 @@
+name: Update Fantasy Baseball Dashboard
+
+on:
+  schedule:
+    - cron: '0 7 * * *'    # Daily at 3 AM ET (7 AM UTC) — collects player stats
+    - cron: '0 14 * * 1'   # Monday 10 AM ET — collects new week matchup stats
+  workflow_dispatch:         # Manual trigger from GitHub UI anytime
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout analyzer repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Chrome
+        run: |
+          wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Create .env from secrets
+        run: |
+          echo "SWID=${{ secrets.SWID }}" > .env
+          echo "ESPN_S2=${{ secrets.ESPN_S2 }}" >> .env
+
+      - name: Collect today's player stats
+        run: |
+          TODAY=$(date +'%Y-%m-%d')
+          python collect_player_daily.py --league-id 94668654 --start-date $TODAY --end-date $TODAY
+
+      - name: Collect weekly matchup stats (Mondays only)
+        if: github.event.schedule == '0 14 * * 1' || github.event_name == 'workflow_dispatch'
+        run: python collect_daily.py --league-id 94668654
+
+      - name: Generate weekly write-up (Mondays only)
+        if: github.event.schedule == '0 14 * * 1' || github.event_name == 'workflow_dispatch'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python generate_weekly_writeup.py --league-id 94668654
+
+      - name: Regenerate dashboard
+        run: python generate_dashboard.py
+
+      - name: Commit updated database and dashboard
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git add fantasy_baseball.db dashboard.html dashboard_data.json weekly_writeups.json
+          git diff --staged --quiet || git commit -m "Auto-update $(date +'%Y-%m-%d')"
+          git push
+
+      - name: Push dashboard to Pages repo
+        uses: actions/checkout@v4
+        with:
+          repository: kevinjglancy/fantasy-baseball-2026
+          token: ${{ secrets.GH_PAT }}
+          path: pages-repo
+
+      - name: Copy and deploy dashboard
+        run: |
+          cp dashboard.html pages-repo/index.html
+          cd pages-repo
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git add index.html
+          git diff --staged --quiet || git commit -m "Auto-update $(date +'%Y-%m-%d')"
+          git push
