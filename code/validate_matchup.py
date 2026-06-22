@@ -20,12 +20,7 @@ def fetch_espn_matchup_stats(league_id: int, matchup_period: int, scoring_period
     swid = os.getenv('SWID')
     espn_s2 = unquote(os.getenv('ESPN_S2'))
 
-    options = webdriver.ChromeOptions()
-    options.add_argument('--headless')
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
-
-    driver = webdriver.Chrome(options=options)
+    driver = setup_driver_with_cookies(swid, espn_s2)
     driver.get("https://fantasy.espn.com")
     driver.add_cookie({'name': 'SWID', 'value': swid})
     driver.add_cookie({'name': 'espn_s2', 'value': espn_s2})

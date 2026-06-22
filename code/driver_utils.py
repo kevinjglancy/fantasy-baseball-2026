@@ -18,6 +18,11 @@ def create_driver() -> webdriver.Chrome:
     options.add_argument('--disable-gpu')
     options.add_argument('user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36')
 
+    # Allow overriding Chrome binary (needed on GitHub Actions where it's chromium-browser)
+    chrome_binary = os.environ.get('CHROME_BINARY')
+    if chrome_binary:
+        options.binary_location = chrome_binary
+
     chromedriver_path = os.environ.get('CHROMEDRIVER_PATH')
     if chromedriver_path:
         return webdriver.Chrome(service=Service(chromedriver_path), options=options)
