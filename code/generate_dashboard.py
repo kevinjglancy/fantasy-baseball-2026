@@ -202,6 +202,7 @@ _latest_week=max((w for w in range(2,20) if len(get_weekly_stats(conn,w))>=10),d
 weekly_top_batters=[]; weekly_top_pitchers=[]
 if _latest_week:
     _ws,_we=get_week_date_range(_latest_week)
+    # Sum across ALL daily snapshots for the week (player_snapshots stores daily stats, not cumulative)
     cursor.execute("""
         SELECT p.player_name,
             (SELECT team_name FROM player_snapshots p2 WHERE p2.player_name=p.player_name AND p2.player_type='batter'
@@ -209,22 +210,25 @@ if _latest_week:
             SUM(CASE WHEN h_ab LIKE '%/%' AND h_ab!='--/--' THEN CAST(SUBSTR(h_ab,1,INSTR(h_ab,'/')-1) AS REAL) ELSE 0 END),
             SUM(CASE WHEN h_ab LIKE '%/%' AND h_ab!='--/--' THEN CAST(SUBSTR(h_ab,INSTR(h_ab,'/')+1) AS REAL) ELSE 0 END),
             SUM(COALESCE(r,0)),SUM(COALESCE(hr,0)),SUM(COALESCE(rbi,0)),SUM(COALESCE(bb,0)),SUM(COALESCE(sb,0)),
-            AVG(CASE WHEN avg IS NOT NULL THEN avg ELSE NULL END),
-            AVG(CASE WHEN ops IS NOT NULL THEN ops ELSE NULL END)
+            SUM(CASE WHEN h_ab LIKE '%/%' AND h_ab!='--/--' AND ops IS NOT NULL
+                THEN (ops-(CAST(SUBSTR(h_ab,1,INSTR(h_ab,'/')-1) AS REAL)+COALESCE(bb,0))
+                     /NULLIF(CAST(SUBSTR(h_ab,INSTR(h_ab,'/')+1) AS REAL)+COALESCE(bb,0),0))
+                     *CAST(SUBSTR(h_ab,INSTR(h_ab,'/')+1) AS REAL) ELSE 0 END)
         FROM player_snapshots p WHERE player_type='batter' AND week=?
-          AND snapshot_date=(SELECT MAX(snapshot_date) FROM player_snapshots p3
-            WHERE p3.player_name=p.player_name AND p3.week=?)
           AND player_name NOT IN ('Empty','__Empty__')
         GROUP BY player_name
-        HAVING SUM(CASE WHEN h_ab LIKE '%/%' AND h_ab!='--/--' THEN CAST(SUBSTR(h_ab,INSTR(h_ab,'/')+1) AS REAL) ELSE 0 END)>=3
-    """, (_latest_week, _latest_week, _latest_week))
+        HAVING SUM(CASE WHEN h_ab LIKE '%/%' AND h_ab!='--/--' THEN CAST(SUBSTR(h_ab,INSTR(h_ab,'/')+1) AS REAL) ELSE 0 END)>=10
+    """, (_latest_week, _latest_week))
     _wb=[]
     for row in cursor.fetchall():
-        nm,tm,h,ab,r,hr,rbi,bb,sb,avg,ops=row
+        nm,tm,h,ab,r,hr,rbi,bb,sb,tb=row
         if not tm: continue
+        avg=h/ab if ab>0 else 0
+        obp=(h+bb)/(ab+bb) if (ab+bb)>0 else 0
+        slg=tb/ab if ab>0 else 0
         _wb.append({'name':nm,'team':tm,'ab':int(ab or 0),'r':round(r,1),'hr':round(hr,1),
-                    'rbi':round(rbi,1),'sb':round(sb,1),'avg':round(avg or 0,3),'ops':round(ops or 0,3),'ptype':'bat'})
-    weekly_top_batters=zscore_players(_wb,BAT_CATS,min_key='ab',min_val=3)[:10]
+                    'rbi':round(rbi,1),'sb':round(sb,1),'avg':round(avg,3),'ops':round(obp+slg,3),'ptype':'bat'})
+    weekly_top_batters=zscore_players(_wb,BAT_CATS,min_key='ab',min_val=10)[:10]
     for i,b in enumerate(weekly_top_batters): b['rank']=i+1; b['score']=round(b['z_total'],2); b['week']=_latest_week
 
     cursor.execute("""
@@ -234,11 +238,9 @@ if _latest_week:
             SUM(ip),SUM(COALESCE(h,0)),SUM(COALESCE(er,0)),SUM(COALESCE(bb,0)),
             SUM(COALESCE(k,0)),SUM(COALESCE(qs,0)),SUM(COALESCE(sv,0)),SUM(COALESCE(hd,0))
         FROM player_snapshots p WHERE player_type='pitcher' AND week=? AND ip IS NOT NULL AND ip>0
-          AND snapshot_date=(SELECT MAX(snapshot_date) FROM player_snapshots p3
-            WHERE p3.player_name=p.player_name AND p3.week=?)
           AND player_name NOT IN ('Empty','__Empty__')
-        GROUP BY player_name HAVING SUM(ip)>=1
-    """, (_latest_week, _latest_week, _latest_week))
+        GROUP BY player_name HAVING SUM(ip)>=3
+    """, (_latest_week, _latest_week))
     _wp=[]
     for row in cursor.fetchall():
         nm,tm,ip,h,er,bb,k,qs,sv,hd=row
