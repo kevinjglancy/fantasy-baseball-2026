@@ -392,7 +392,8 @@ for team in exp_order:
 with open(html_template) as f:
     html=f.read()
 
-html=re.sub(r'const DATA = \{.*?\};', f'const DATA = {json.dumps(data)};', html, flags=re.DOTALL)
+_repl=f'const DATA = {json.dumps(data)};'
+html=re.sub(r'const DATA = \{.*?\};', lambda _: _repl, html, flags=re.DOTALL)
 
 with open(html_template,'w') as f:
     f.write(html)
