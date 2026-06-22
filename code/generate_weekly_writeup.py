@@ -212,6 +212,26 @@ def fmt_val(cat, val):
     return round(val, 3) if cat in ('avg', 'ops', 'era', 'whip') else int(val or 0)
 
 
+def compute_roto_points(stats_dict):
+    """1st=12pts, 2nd=11pts, ..., 10th=3pts. Ties share points."""
+    if not stats_dict: return {}
+    n = len(stats_dict); teams = list(stats_dict.keys())
+    pts = {t: {} for t in teams}
+    for cat in CATEGORIES:
+        vals = sorted([(t, stats_dict[t].get(cat) or 0) for t in teams],
+                      key=lambda x: x[1], reverse=(cat not in LOWER_IS_BETTER))
+        i = 0
+        while i < n:
+            j = i
+            while j < n and vals[j][1] == vals[i][1]: j += 1
+            shared = sum(12 - k for k in range(i, j)) / (j - i)
+            for k in range(i, j): pts[vals[k][0]][cat] = round(shared, 1)
+            i = j
+    for t in teams:
+        pts[t]['total'] = round(sum(pts[t].get(c, 0) for c in CATEGORIES), 1)
+    return pts
+
+
 def get_season_standings(conn):
     cursor = conn.cursor()
     cursor.execute("""
@@ -282,14 +302,18 @@ def build_prompt(week, conn, league_id=94668654):
         )
 
     # Weekly roto leaders
-    roto_lines = []
+    # Compute weekly roto standings (1st=12pts ... 10th=3pts)
+    weekly_roto = compute_roto_points(week_stats)
+    roto_sorted = sorted(weekly_roto.items(), key=lambda x: x[1]['total'], reverse=True)
+    roto_lines = [
+        f"{i+1}. {team} — {pts['total']}pts "
+        f"(top cats: {', '.join(c.upper() for c in CATEGORIES if pts.get(c, 0) >= 10)})"
+        for i, (team, pts) in enumerate(roto_sorted)
+    ]
+    cat_leaders = []
     for cat in CATEGORIES:
-        sorted_teams = sorted(week_stats.items(),
-                              key=lambda x: x[1].get(cat) or 0,
-                              reverse=(cat not in LOWER_IS_BETTER))
-        if sorted_teams:
-            best_team, best_stats = sorted_teams[0]
-            roto_lines.append(f"{cat.upper()}: {best_team} ({fmt_val(cat, best_stats.get(cat))})")
+        leader = max(weekly_roto.items(), key=lambda x: x[1].get(cat, 0))
+        cat_leaders.append(f"{cat.upper()}: {leader[0]} ({fmt_val(cat, week_stats.get(leader[0], {}).get(cat))})")
 
     standings_lines = [
         f"{i+1}. {s['team']} ({s['owner']}): {s['w']}-{s['l']}-{s['t']} ({s['pct']})"
@@ -301,8 +325,9 @@ def build_prompt(week, conn, league_id=94668654):
         f"for this 10-team H2H categories league.\n\n"
         f"{'='*60}\nMATCHUP DATA\n{'='*60}\n\n"
         + '\n\n'.join(matchup_blocks)
-        + f"\n\n{'='*60}\nWEEKLY ROTO LEADERS (best team per category this week)\n{'='*60}\n"
+        + f"\n\n{'='*60}\nWEEKLY ROTO STANDINGS (1st=12pts, 10th=3pts)\n{'='*60}\n"
         + '\n'.join(roto_lines)
+        + f"\n\nCategory leaders this week:\n" + '\n'.join(cat_leaders)
         + f"\n\n{'='*60}\nSEASON STANDINGS\n{'='*60}\n"
         + '\n'.join(standings_lines)
         + f"""
@@ -322,7 +347,7 @@ Return ONLY a JSON object with this exact structure (no markdown fences, no extr
       "standout_players": "2-3 sentences with specific player names and real stat lines"
     }}
   ],
-  "roto_section": "2-3 sentences highlighting weekly category leaders",
+  "roto_section": "2-3 sentences about the weekly roto standings — mention specific point totals, who led the week overall, which teams dominated or struggled in categories",
   "standings_note": "1-2 sentences about standings implications or expected record gaps"
 }}
 

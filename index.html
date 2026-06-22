@@ -185,6 +185,20 @@
         <tbody id="pit-stats-body"></tbody>
       </table>
     </div>
+    <div class="section-title" style="margin-top:32px">Season Roto Standings</div>
+    <p style="color:var(--muted);font-size:0.85rem;margin-bottom:16px">1st in a category = 12 pts, 2nd = 11 pts, ... 10th = 3 pts. Ties share points. Max possible = 144.</p>
+    <div class="table-wrap">
+      <table id="season-roto-table">
+        <thead><tr>
+          <th class="rank">#</th>
+          <th>Team</th>
+          <th>R</th><th>HR</th><th>RBI</th><th>SB</th><th>AVG</th><th>OPS</th>
+          <th>K</th><th>QS</th><th>SV</th><th>HD</th><th>ERA</th><th>WHIP</th>
+          <th style="border-left:1px solid #3e4460;font-weight:700">Total</th>
+        </tr></thead>
+        <tbody id="season-roto-body"></tbody>
+      </table>
+    </div>
   </div>
 
   <!-- EXPECTED RECORD -->
@@ -222,6 +236,7 @@
 
   <!-- WEEK LEADERS -->
   <div id="tab-week-leaders" class="tab-panel">
+    <div id="weekly-roto-section"></div>
     <div id="weekly-leaders-section"></div>
   </div>
 
@@ -457,6 +472,55 @@ function avg(v) { return v.toFixed(3); }
       <td class="${dc}">${sign}${t.diff.toFixed(3)}</td>
     </tr>`;
   });
+})();
+
+// ── Roto Standings renderer ───────────────────────────────────────────────────
+function renderRotoTable(rotoData, tbodyId) {
+  const cats = ['r','hr','rbi','sb','avg','ops','k','qs','sv','hd','era','whip'];
+  const rows = Object.entries(rotoData)
+    .map(([team, pts]) => ({team, pts}))
+    .sort((a,b) => b.pts.total - a.pts.total);
+  const tbody = document.getElementById(tbodyId);
+  if (!tbody) return;
+  const maxPts = Math.max(...rows.map(r => r.pts.total));
+  const minPts = Math.min(...rows.map(r => r.pts.total));
+  rows.forEach((row, i) => {
+    const pct = maxPts > minPts ? (row.pts.total - minPts) / (maxPts - minPts) : 1;
+    const color = pct > 0.6 ? 'var(--green)' : pct < 0.3 ? 'var(--red)' : 'var(--yellow)';
+    const catCells = cats.map(c => {
+      const v = row.pts[c] || 0;
+      const catColor = v >= 10 ? 'var(--green)' : v <= 5 ? 'var(--red)' : 'var(--text)';
+      return `<td style="color:${catColor}">${v}</td>`;
+    }).join('');
+    tbody.innerHTML += `<tr><td class="rank">${i+1}</td><td class="team-name">${row.team}</td>${catCells}<td style="border-left:1px solid #3e4460;font-weight:700;color:${color}">${row.pts.total}</td></tr>`;
+  });
+}
+
+(function() {
+  renderRotoTable(DATA.season_roto || {}, 'season-roto-body');
+})();
+
+(function() {
+  const wr = DATA.weekly_roto || {};
+  const wb = DATA.weekly_top_batters || [];
+  const week = (wb[0] || {}).week;
+  if (!Object.keys(wr).length) return;
+  const sec = document.getElementById('weekly-roto-section');
+  sec.innerHTML = `
+    <div class="section-title">Week ${week || '?'} Roto Standings</div>
+    <p style="color:var(--muted);font-size:0.85rem;margin-bottom:16px">1st = 12 pts, 2nd = 11 pts ... 10th = 3 pts. Shows how each team ranked in each category this week.</p>
+    <div class="table-wrap" style="margin-bottom:32px">
+      <table>
+        <thead><tr>
+          <th class="rank">#</th><th>Team</th>
+          <th>R</th><th>HR</th><th>RBI</th><th>SB</th><th>AVG</th><th>OPS</th>
+          <th>K</th><th>QS</th><th>SV</th><th>HD</th><th>ERA</th><th>WHIP</th>
+          <th style="border-left:1px solid #3e4460;font-weight:700">Total</th>
+        </tr></thead>
+        <tbody id="weekly-roto-body"></tbody>
+      </table>
+    </div>`;
+  renderRotoTable(wr, 'weekly-roto-body');
 })();
 
 // ── Weekly Leaders ───────────────────────────────────────────────────────────

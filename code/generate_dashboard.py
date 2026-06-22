@@ -13,6 +13,24 @@ PIT_CATS = ['k','qs','sv','hd','era','whip']
 def norm_cdf(z):
     return 0.5*(1.0+math.erf(z/math.sqrt(2.0)))
 
+def compute_roto_points(stats_dict):
+    """Assign roto points per category: 1st=12, 2nd=11, ..., 10th=3. Ties share points."""
+    if not stats_dict: return {}
+    n=len(stats_dict); teams=list(stats_dict.keys())
+    pts={t:{} for t in teams}
+    for cat in CATEGORIES:
+        vals=sorted([(t,stats_dict[t].get(cat) or 0) for t in teams],
+                    key=lambda x:x[1],reverse=(cat not in LOWER_IS_BETTER))
+        i=0
+        while i<n:
+            j=i
+            while j<n and vals[j][1]==vals[i][1]: j+=1
+            shared=sum(12-k for k in range(i,j))/(j-i)
+            for k in range(i,j): pts[vals[k][0]][cat]=round(shared,1)
+            i=j
+    for t in teams: pts[t]['total']=round(sum(pts[t].get(c,0) for c in CATEGORIES),1)
+    return pts
+
 def parse_ip(ip_val):
     if ip_val is None: return 0.0
     whole=int(ip_val); return whole+round(ip_val-whole,1)*10/3
@@ -372,8 +390,12 @@ if os.path.exists(_wu_path):
         except Exception:
             pass
 
+season_roto=compute_roto_points({t:{c:actual[t].get(c,0) for c in CATEGORIES} for t in actual})
+weekly_roto=compute_roto_points(get_weekly_stats(conn,_latest_week)) if _latest_week else {}
+
 data={'snap_date':snap_date,'standings':[],'top_batters':top_batters,'top_pitchers':top_pitchers,
       'weekly_top_batters':weekly_top_batters,'weekly_top_pitchers':weekly_top_pitchers,
+      'season_roto':season_roto,'weekly_roto':weekly_roto,
       'teams':{},'weekly_exp':{},'actual_by_week':actual_by_week,'trades':trades_data,
       'rosters':{team:dict(v) for team,v in team_rosters.items()},
       'weekly_writeups':weekly_writeups}
