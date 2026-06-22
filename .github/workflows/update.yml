@@ -2,8 +2,8 @@ name: Update Fantasy Baseball Dashboard
 
 on:
   schedule:
-    - cron: '0 11 * * *'    # Daily 6 AM ET — collect player stats
-    - cron: '0 14 * * 1'   # Monday 10 AM ET — collect new matchup stats
+    - cron: '0 11 * * *'    # Daily 6 AM ET (11 AM UTC) — collect player stats
+    - cron: '0 14 * * 1'   # Monday 10 AM ET (2 PM UTC) — collect previous week matchup stats
   workflow_dispatch:         # Manual trigger from GitHub UI anytime
 
 jobs:
@@ -44,10 +44,13 @@ jobs:
           YESTERDAY=$(date -d "yesterday" +'%Y-%m-%d')
           python collect_player_daily.py --league-id 94668654 --start-date $YESTERDAY --end-date $YESTERDAY
 
-      - name: Collect weekly matchup stats (Mondays only)
+      - name: Collect previous week's matchup stats (Mondays only)
         if: github.event.schedule == '0 14 * * 1' || github.event_name == 'workflow_dispatch'
         working-directory: code
-        run: python collect_daily.py --league-id 94668654
+        run: |
+          # Last Sunday = end of previous matchup week
+          LAST_SUNDAY=$(date -d "last sunday" +'%Y-%m-%d')
+          python collect_daily.py --league-id 94668654 --start-date $LAST_SUNDAY --end-date $LAST_SUNDAY
 
       - name: Regenerate dashboard
         working-directory: code
