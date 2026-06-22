@@ -1,0 +1,21 @@
+# Credentials — never commit these
+.env
+
+# Database — large binary, rebuild from scripts
+*.db
+*.db-shm
+*.db-wal
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# Generated files
+dashboard_data.json
+season_report.txt
+
+# OS
+.DS_Store
