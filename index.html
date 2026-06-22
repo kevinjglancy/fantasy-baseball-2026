@@ -191,11 +191,6 @@
       Category win probability is weighted by the field's spread — a 1-run edge in a tight field barely moves the needle above 50%.
       Positive Diff = overperforming (lucky schedule). Negative Diff = underperforming (unlucky schedule).
     </p>
-    <div class="section-title" style="margin-bottom:12px">Cumulative Expected Win% — Week by Week</div>
-    <p style="color:var(--muted);font-size:0.82rem;margin-bottom:16px">Lines = cumulative expected win%. Dots = actual win% at available standings snapshots (Weeks 6, 9, 12).</p>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:32px">
-      <canvas id="exp-chart" height="120"></canvas>
-    </div>
     <div class="table-wrap">
       <table id="exp-table">
         <thead><tr>
@@ -213,6 +208,11 @@
         </tr></thead>
         <tbody id="exp-body"></tbody>
       </table>
+    </div>
+    <div class="section-title" style="margin-top:32px;margin-bottom:12px">Cumulative Expected Win% — Week by Week</div>
+    <p style="color:var(--muted);font-size:0.82rem;margin-bottom:16px">Lines = cumulative expected win%. Triangles = actual win% at available standings snapshots (Weeks 6, 9, 12).</p>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:32px">
+      <canvas id="exp-chart" height="120"></canvas>
     </div>
   </div>
 
@@ -233,7 +233,13 @@
           <th onclick="sortTable('hitters-table',7)">SB</th>
           <th onclick="sortTable('hitters-table',8)">AVG</th>
           <th onclick="sortTable('hitters-table',9)">OPS</th>
-          <th onclick="sortTable('hitters-table',10)">Score</th>
+          <th onclick="sortTable('hitters-table',10)" style="border-left:1px solid #3e4460">zR</th>
+          <th onclick="sortTable('hitters-table',11)">zHR</th>
+          <th onclick="sortTable('hitters-table',12)">zRBI</th>
+          <th onclick="sortTable('hitters-table',13)">zSB</th>
+          <th onclick="sortTable('hitters-table',14)">zAVG</th>
+          <th onclick="sortTable('hitters-table',15)">zOPS</th>
+          <th onclick="sortTable('hitters-table',16)" style="border-left:1px solid #3e4460">Score</th>
         </tr></thead>
         <tbody id="hitters-body"></tbody>
       </table>
@@ -254,7 +260,13 @@
           <th onclick="sortTable('pitchers-table',7)">HD</th>
           <th onclick="sortTable('pitchers-table',8)">ERA</th>
           <th onclick="sortTable('pitchers-table',9)">WHIP</th>
-          <th onclick="sortTable('pitchers-table',10)">Score</th>
+          <th onclick="sortTable('pitchers-table',10)" style="border-left:1px solid #3e4460">zK</th>
+          <th onclick="sortTable('pitchers-table',11)">zQS</th>
+          <th onclick="sortTable('pitchers-table',12)">zSV</th>
+          <th onclick="sortTable('pitchers-table',13)">zHD</th>
+          <th onclick="sortTable('pitchers-table',14)">zERA</th>
+          <th onclick="sortTable('pitchers-table',15)">zWHIP</th>
+          <th onclick="sortTable('pitchers-table',16)" style="border-left:1px solid #3e4460">Score</th>
         </tr></thead>
         <tbody id="pitchers-body"></tbody>
       </table>
@@ -377,25 +389,39 @@ function avg(v) { return v.toFixed(3); }
 // ── Top Players ──────────────────────────────────────────────────────────────
 (function() {
   const hbody = document.getElementById('hitters-body');
+  const batZcats = ['r','hr','rbi','sb','avg','ops'];
   DATA.top_batters.forEach((p, i) => {
+    const zCells = batZcats.map((c,ci) => {
+      const z = p['z_'+c] || 0;
+      const col = z > 0.5 ? 'var(--green)' : z < -0.5 ? 'var(--red)' : 'var(--text)';
+      return `<td style="color:${col};font-size:0.82rem${ci===0?';border-left:1px solid #3e4460':''}">${z.toFixed(2)}</td>`;
+    }).join('');
     hbody.innerHTML += `<tr>
       <td class="rank">${medal(i)}</td>
       <td><b>${p.name}</b></td>
       <td style="color:var(--muted);font-size:0.82rem">${p.team}</td>
       <td>${p.ab}</td><td>${p.r}</td><td>${p.hr}</td><td>${p.rbi}</td><td>${p.sb}</td>
       <td>${avg(p.avg)}</td><td><b>${p.ops.toFixed(3)}</b></td>
-      <td><span class="score-badge">${p.score}</span></td>
+      ${zCells}
+      <td style="border-left:1px solid #3e4460"><span class="score-badge">${p.score}</span></td>
     </tr>`;
   });
   const pbody = document.getElementById('pitchers-body');
+  const pitZcats = ['k','qs','sv','hd','era','whip'];
   DATA.top_pitchers.forEach((p, i) => {
+    const zCells = pitZcats.map((c,ci) => {
+      const z = p['z_'+c] || 0;
+      const col = z > 0.5 ? 'var(--green)' : z < -0.5 ? 'var(--red)' : 'var(--text)';
+      return `<td style="color:${col};font-size:0.82rem${ci===0?';border-left:1px solid #3e4460':''}">${z.toFixed(2)}</td>`;
+    }).join('');
     pbody.innerHTML += `<tr>
       <td class="rank">${medal(i)}</td>
       <td><b>${p.name}</b></td>
       <td style="color:var(--muted);font-size:0.82rem">${p.team}</td>
       <td>${p.ip}</td><td>${p.k}</td><td>${p.qs}</td><td>${p.sv}</td><td>${p.hd}</td>
       <td>${era(p.era)}</td><td>${whip(p.whip)}</td>
-      <td><span class="score-badge">${p.score}</span></td>
+      ${zCells}
+      <td style="border-left:1px solid #3e4460"><span class="score-badge">${p.score}</span></td>
     </tr>`;
   });
 })();
