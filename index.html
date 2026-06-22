@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fantasy Baseball 2026</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3250;
+    --accent: #6c8ef7;
+    --accent2: #f7776c;
+    --green: #4ade80;
+    --red: #f87171;
+    --yellow: #fbbf24;
+    --text: #e2e8f0;
+    --muted: #8892a4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+  /* Header */
+  .header { background: linear-gradient(135deg, #1a1d27 0%, #0f1117 100%); border-bottom: 1px solid var(--border); padding: 20px 32px; display: flex; align-items: center; justify-content: space-between; }
+  .header h1 { font-size: 1.6rem; font-weight: 700; background: linear-gradient(90deg, var(--accent), #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .header .snap { font-size: 0.8rem; color: var(--muted); }
+
+  /* Nav tabs */
+  .nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 32px; display: flex; gap: 4px; overflow-x: auto; }
+  .nav button { background: none; border: none; color: var(--muted); padding: 14px 20px; cursor: pointer; font-size: 0.9rem; font-weight: 500; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.15s; }
+  .nav button:hover { color: var(--text); }
+  .nav button.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* Content */
+  .content { padding: 28px 32px; max-width: 1400px; margin: 0 auto; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Section headers */
+  .section-title { font-size: 1.1rem; font-weight: 600; color: var(--text); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .section-title::before { content: ''; display: block; width: 4px; height: 18px; background: var(--accent); border-radius: 2px; }
+
+  /* Cards */
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; }
+  .card .label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .card .value { font-size: 1.8rem; font-weight: 700; color: var(--text); }
+  .card .sub { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+
+  /* Tables */
+  .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 32px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+  thead { background: var(--surface2); }
+  th { padding: 12px 14px; text-align: left; font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); white-space: nowrap; cursor: pointer; user-select: none; }
+  th:hover { color: var(--text); }
+  th.sorted-asc::after { content: ' ↑'; color: var(--accent); }
+  th.sorted-desc::after { content: ' ↓'; color: var(--accent); }
+  td { padding: 11px 14px; border-top: 1px solid var(--border); white-space: nowrap; }
+  tbody tr:hover { background: var(--surface2); }
+  .rank { color: var(--muted); font-size: 0.8rem; width: 30px; }
+  .team-name { font-weight: 600; }
+  .owner-name { color: var(--muted); font-size: 0.82rem; }
+
+  /* Diff badge */
+  .diff-pos { color: var(--green); font-weight: 600; }
+  .diff-neg { color: var(--red); font-weight: 600; }
+  .diff-neu { color: var(--muted); }
+
+  /* Progress bar */
+  .bar-wrap { display: flex; align-items: center; gap: 8px; }
+  .bar { height: 6px; border-radius: 3px; background: var(--border); flex: 1; min-width: 60px; }
+  .bar-fill { height: 100%; border-radius: 3px; background: var(--accent); }
+  .bar-val { font-size: 0.82rem; color: var(--text); min-width: 40px; text-align: right; }
+
+  /* Score badge */
+  .score-badge { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 2px 10px; font-size: 0.8rem; font-weight: 600; color: var(--accent); }
+
+  /* Team selector */
+  .team-select-wrap { margin-bottom: 24px; }
+  .team-select-wrap label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+  select { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; outline: none; min-width: 240px; }
+  select:focus { border-color: var(--accent); }
+
+  /* Stat pills for team overview */
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; margin-bottom: 28px; }
+  .stat-pill { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
+  .stat-pill .s-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+  .stat-pill .s-val { font-size: 1.3rem; font-weight: 700; }
+
+  /* Medal colors */
+  .gold { color: #fbbf24; }
+  .silver { color: #94a3b8; }
+  .bronze { color: #b45309; }
+
+  /* Write-up */
+  .writeup { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px 28px; line-height: 1.75; color: var(--text); font-size: 0.92rem; white-space: pre-wrap; }
+
+  /* Tooltip */
+  .tooltip { position: relative; cursor: help; }
+  .tooltip .tip { display: none; position: absolute; bottom: 120%; left: 50%; transform: translateX(-50%); background: #1e2236; border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 0.78rem; color: var(--text); white-space: nowrap; z-index: 10; }
+  .tooltip:hover .tip { display: block; }
+
+  @media (max-width: 640px) {
+    .header { padding: 14px 16px; }
+    .content { padding: 16px; }
+    .nav { padding: 0 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⚾ Fantasy Baseball 2026</h1>
+  <span class="snap" id="snap-date"></span>
+</div>
+
+<nav class="nav">
+  <button class="active" onclick="showTab('standings')">Standings</button>
+  <button onclick="showTab('stats')">Season Stats</button>
+  <button onclick="showTab('expected')">Expected Record</button>
+  <button onclick="showTab('players')">Top Players</button>
+  <button onclick="showTab('teams')">Team Drill-Down</button>
+  <button onclick="showTab('writeup')">Season Write-Up</button>
+</nav>
+
+<div class="content">
+
+  <!-- STANDINGS -->
+  <div id="tab-standings" class="tab-panel active">
+    <div class="section-title">League Standings</div>
+    <div class="table-wrap">
+      <table id="standings-table">
+        <thead><tr>
+          <th class="rank">#</th>
+          <th onclick="sortTable('standings-table',1)">Team</th>
+          <th onclick="sortTable('standings-table',2)">Owner</th>
+          <th onclick="sortTable('standings-table',3)">W</th>
+          <th onclick="sortTable('standings-table',4)">L</th>
+          <th onclick="sortTable('standings-table',5)">T</th>
+          <th onclick="sortTable('standings-table',6)">PCT</th>
+          <th onclick="sortTable('standings-table',7)">GB</th>
+        </tr></thead>
+        <tbody id="standings-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SEASON STATS -->
+  <div id="tab-stats" class="tab-panel">
+    <div class="section-title">Batting</div>
+    <div class="table-wrap">
+      <table id="bat-stats-table">
+        <thead><tr>
+          <th class="rank">#</th>
+          <th onclick="sortTable('bat-stats-table',1)">Team</th>
+          <th onclick="sortTable('bat-stats-table',2)">R</th>
+          <th onclick="sortTable('bat-stats-table',3)">HR</th>
+          <th onclick="sortTable('bat-stats-table',4)">RBI</th>
+          <th onclick="sortTable('bat-stats-table',5)">SB</th>
+          <th onclick="sortTable('bat-stats-table',6)">AVG</th>
+          <th onclick="sortTable('bat-stats-table',7)">OPS</th>
+        </tr></thead>
+        <tbody id="bat-stats-body"></tbody>
+      </table>
+    </div>
+    <div class="section-title">Pitching</div>
+    <div class="table-wrap">
+      <table id="pit-stats-table">
+        <thead><tr>
+          <th class="rank">#</th>
+          <th onclick="sortTable('pit-stats-table',1)">Team</th>
+          <th onclick="sortTable('pit-stats-table',2)">K</th>
+          <th onclick="sortTable('pit-stats-table',3)">QS</th>
+          <th onclick="sortTable('pit-stats-table',4)">SV</th>
+          <th onclick="sortTable('pit-stats-table',5)">HD</th>
+          <th onclick="sortTable('pit-stats-table',6)">ERA</th>
+          <th onclick="sortTable('pit-stats-table',7)">WHIP</th>
+        </tr></thead>
+        <tbody id="pit-stats-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- EXPECTED RECORD -->
+  <div id="tab-expected" class="tab-panel">
+    <div class="section-title">Expected vs Actual Record</div>
+    <p style="color:var(--muted);font-size:0.85rem;margin-bottom:20px;">
+      Expected record simulates every team playing every other team each week (round-robin).
+      Category win probability is weighted by the field's spread — a 1-run edge in a tight field barely moves the needle above 50%.
+      Positive Diff = overperforming (lucky schedule). Negative Diff = underperforming (unlucky schedule).
+    </p>
+    <div class="table-wrap">
+      <table id="exp-table">
+        <thead><tr>
+          <th class="rank">#</th>
+          <th onclick="sortTable('exp-table',1)">Team</th>
+          <th onclick="sortTable('exp-table',2)">Owner</th>
+          <th onclick="sortTable('exp-table',3)" class="tooltip">Exp W<span class="tip">Expected wins (round-robin simulation)</span></th>
+          <th onclick="sortTable('exp-table',4)">Exp L</th>
+          <th onclick="sortTable('exp-table',5)">Exp%</th>
+          <th onclick="sortTable('exp-table',6)">Act W</th>
+          <th onclick="sortTable('exp-table',7)">Act L</th>
+          <th onclick="sortTable('exp-table',8)">Act T</th>
+          <th onclick="sortTable('exp-table',9)">Act%</th>
+          <th onclick="sortTable('exp-table',10)" class="tooltip">Diff<span class="tip">Act% minus Exp% — positive means lucky schedule</span></th>
+        </tr></thead>
+        <tbody id="exp-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TOP PLAYERS -->
+  <div id="tab-players" class="tab-panel">
+    <div class="section-title">Top 10 Hitters</div>
+    <p style="color:var(--muted);font-size:0.85rem;margin-bottom:20px;">Ranked by composite z-score across R, HR, RBI, SB, AVG, OPS. Score = sum of z-scores (how many standard deviations above league average).</p>
+    <div class="table-wrap">
+      <table id="hitters-table">
+        <thead><tr>
+          <th class="rank">#</th>
+          <th onclick="sortTable('hitters-table',1)">Player</th>
+          <th onclick="sortTable('hitters-table',2)">Team</th>
+          <th onclick="sortTable('hitters-table',3)">AB</th>
+          <th onclick="sortTable('hitters-table',4)">R</th>
+          <th onclick="sortTable('hitters-table',5)">HR</th>
+          <th onclick="sortTable('hitters-table',6)">RBI</th>
+          <th onclick="sortTable('hitters-table',7)">SB</th>
+          <th onclick="sortTable('hitters-table',8)">AVG</th>
+          <th onclick="sortTable('hitters-table',9)">OPS</th>
+          <th onclick="sortTable('hitters-table',10)">Score</th>
+        </tr></thead>
+        <tbody id="hitters-body"></tbody>
+      </table>
+    </div>
+
+    <div class="section-title">Top 10 Pitchers</div>
+    <p style="color:var(--muted);font-size:0.85rem;margin-bottom:20px;">Ranked by composite z-score across K, QS, SV, HD, ERA, WHIP. ERA and WHIP are inverted (lower = better).</p>
+    <div class="table-wrap">
+      <table id="pitchers-table">
+        <thead><tr>
+          <th class="rank">#</th>
+          <th onclick="sortTable('pitchers-table',1)">Player</th>
+          <th onclick="sortTable('pitchers-table',2)">Team</th>
+          <th onclick="sortTable('pitchers-table',3)">IP</th>
+          <th onclick="sortTable('pitchers-table',4)">K</th>
+          <th onclick="sortTable('pitchers-table',5)">QS</th>
+          <th onclick="sortTable('pitchers-table',6)">SV</th>
+          <th onclick="sortTable('pitchers-table',7)">HD</th>
+          <th onclick="sortTable('pitchers-table',8)">ERA</th>
+          <th onclick="sortTable('pitchers-table',9)">WHIP</th>
+          <th onclick="sortTable('pitchers-table',10)">Score</th>
+        </tr></thead>
+        <tbody id="pitchers-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TEAM DRILL-DOWN -->
+  <div id="tab-teams" class="tab-panel">
+    <div class="team-select-wrap">
+      <label>Select a team</label>
+      <select id="team-select" onchange="renderTeam()"></select>
+    </div>
+    <div id="team-content"></div>
+  </div>
+
+  <!-- SEASON WRITE-UP -->
+  <div id="tab-writeup" class="tab-panel">
+    <div class="section-title">Season Write-Up — Through Week 12</div>
+    <div style="display:flex;flex-direction:column;gap:20px;margin-top:8px" id="writeup-content"></div>
+  </div>
+
+</div>
+
+<script>
+// ── Load embedded data ──────────────────────────────────────────────────────
+const DATA = {"snap_date": "2026-06-20", "standings": [{"team": "The Big Gamblino", "owner": "Ted Zhang", "exp_w": 69.1, "exp_l": 20.9, "exp_pct": 0.768, "act_w": 74, "act_l": 38, "act_t": 8, "act_pct": 0.65, "diff": -0.118, "r": 490, "hr": 162, "rbi": 466, "sb": 47, "avg": 0.265, "ops": 0.826, "k": 783, "qs": 47, "sv": 51, "hd": 31, "era": 3.778, "whip": 1.24}, {"team": "Pooh's On First", "owner": "Kevin Glancy", "exp_w": 56.6, "exp_l": 33.4, "exp_pct": 0.629, "act_w": 63, "act_l": 49, "act_t": 8, "act_pct": 0.558, "diff": -0.071, "r": 452, "hr": 130, "rbi": 415, "sb": 106, "avg": 0.259, "ops": 0.781, "k": 900, "qs": 58, "sv": 23, "hd": 34, "era": 4.021, "whip": 1.233}, {"team": "Phoenix Coyotes", "owner": "Josh Oremland", "exp_w": 55.9, "exp_l": 34.1, "exp_pct": 0.621, "act_w": 68, "act_l": 45, "act_t": 7, "act_pct": 0.596, "diff": -0.025, "r": 434, "hr": 138, "rbi": 435, "sb": 66, "avg": 0.248, "ops": 0.768, "k": 938, "qs": 63, "sv": 45, "hd": 13, "era": 3.657, "whip": 1.203}, {"team": "Pittsburgh Piglets", "owner": "Julien Piet", "exp_w": 50.6, "exp_l": 39.4, "exp_pct": 0.562, "act_w": 68, "act_l": 46, "act_t": 6, "act_pct": 0.592, "diff": 0.03, "r": 469, "hr": 123, "rbi": 416, "sb": 86, "avg": 0.251, "ops": 0.773, "k": 701, "qs": 39, "sv": 31, "hd": 32, "era": 3.524, "whip": 1.212}, {"team": "The Chicago Orphans", "owner": "Patrick Booth", "exp_w": 49.9, "exp_l": 40.1, "exp_pct": 0.554, "act_w": 57, "act_l": 57, "act_t": 6, "act_pct": 0.5, "diff": -0.054, "r": 473, "hr": 129, "rbi": 452, "sb": 70, "avg": 0.258, "ops": 0.77, "k": 683, "qs": 55, "sv": 22, "hd": 32, "era": 4.109, "whip": 1.246}, {"team": "Seattle Dumpers", "owner": "Devesh Rathee", "exp_w": 47.4, "exp_l": 42.6, "exp_pct": 0.526, "act_w": 68, "act_l": 45, "act_t": 7, "act_pct": 0.596, "diff": 0.07, "r": 380, "hr": 116, "rbi": 410, "sb": 49, "avg": 0.254, "ops": 0.758, "k": 830, "qs": 53, "sv": 22, "hd": 37, "era": 3.34, "whip": 1.168}, {"team": "Lets Go Bucs", "owner": "Sherri Glancy", "exp_w": 47.3, "exp_l": 42.7, "exp_pct": 0.526, "act_w": 50, "act_l": 65, "act_t": 5, "act_pct": 0.438, "diff": -0.089, "r": 458, "hr": 125, "rbi": 440, "sb": 45, "avg": 0.255, "ops": 0.768, "k": 794, "qs": 58, "sv": 32, "hd": 11, "era": 4.033, "whip": 1.267}, {"team": "Pittsburgh Pirates", "owner": "David Glancy", "exp_w": 34.4, "exp_l": 55.6, "exp_pct": 0.382, "act_w": 53, "act_l": 56, "act_t": 11, "act_pct": 0.487, "diff": 0.105, "r": 399, "hr": 111, "rbi": 384, "sb": 57, "avg": 0.255, "ops": 0.741, "k": 711, "qs": 35, "sv": 58, "hd": 10, "era": 4.382, "whip": 1.208}, {"team": "Cronen-Zone", "owner": "Andrew Stephens", "exp_w": 26.5, "exp_l": 63.5, "exp_pct": 0.294, "act_w": 38, "act_l": 73, "act_t": 9, "act_pct": 0.354, "diff": 0.06, "r": 426, "hr": 120, "rbi": 371, "sb": 76, "avg": 0.244, "ops": 0.753, "k": 523, "qs": 30, "sv": 10, "hd": 26, "era": 3.707, "whip": 1.208}, {"team": "All Betts Are Off", "owner": "Andrew Powell", "exp_w": 12.3, "exp_l": 77.7, "exp_pct": 0.137, "act_w": 24, "act_l": 89, "act_t": 7, "act_pct": 0.229, "diff": 0.092, "r": 397, "hr": 81, "rbi": 358, "sb": 70, "avg": 0.25, "ops": 0.705, "k": 366, "qs": 25, "sv": 4, "hd": 14, "era": 4.638, "whip": 1.338}], "top_batters": [{"name": "James Wood", "team": "The Big Gamblino", "ab": 254, "r": 62, "hr": 18, "rbi": 42, "sb": 13, "avg": 0.295, "ops": 0.989, "z_r": 2.9514969183101774, "z_hr": 2.166821537242384, "z_rbi": 1.4768947245646038, "z_sb": 1.9047353564531644, "z_avg": 1.1405217228415014, "z_ops": 1.9841584940164239, "z_total": 11.624628753428254, "score": 11.62}, {"name": "Nick Kurtz", "team": "Pittsburgh Piglets", "ab": 236, "r": 47, "hr": 17, "rbi": 57, "sb": 5, "avg": 0.309, "ops": 1.043, "z_r": 1.7400087449279393, "z_hr": 1.9667532419570453, "z_rbi": 2.707240605859897, "z_sb": 0.2333575709317219, "z_avg": 1.4885218508662958, "z_ops": 2.4274723785466, "z_total": 10.563354393089499, "score": 10.56}, {"name": "Byron Buxton", "team": "Pittsburgh Piglets", "ab": 236, "r": 49, "hr": 24, "rbi": 39, "sb": 7, "avg": 0.288, "ops": 0.988, "z_r": 1.9015405013789044, "z_hr": 3.367231308954418, "z_rbi": 1.230825548305545, "z_sb": 0.6512020173120825, "z_avg": 0.9665216588291043, "z_ops": 1.9759489776362353, "z_total": 10.09327001241629, "score": 10.09}, {"name": "Pete Crow-Armstrong", "team": "Pooh's On First", "ab": 256, "r": 42, "hr": 16, "rbi": 37, "sb": 15, "avg": 0.293, "ops": 0.922, "z_r": 1.3361793538005267, "z_hr": 1.7666849466717063, "z_rbi": 1.066779430799506, "z_sb": 2.3225798028335247, "z_avg": 1.0908074188379595, "z_ops": 1.4341208965437973, "z_total": 9.017151849487021, "score": 9.02}, {"name": "Bobby Witt Jr", "team": "Pooh's On First", "ab": 266, "r": 39, "hr": 10, "rbi": 29, "sb": 24, "avg": 0.301, "ops": 0.864, "z_r": 1.0938817191240793, "z_hr": 0.5662751749596727, "z_rbi": 0.4105949607753494, "z_sb": 4.202879811545148, "z_avg": 1.2896646348521277, "z_ops": 0.9579689464928661, "z_total": 8.521265247749243, "score": 8.52}, {"name": "Yordan Alvarez", "team": "The Big Gamblino", "ab": 251, "r": 42, "hr": 20, "rbi": 45, "sb": 0, "avg": 0.311, "ops": 0.998, "z_r": 1.3361793538005267, "z_hr": 2.566958127813062, "z_rbi": 1.7229639008236624, "z_sb": -0.8112535450191797, "z_avg": 1.538236154869838, "z_ops": 2.05804414143812, "z_total": 8.411128133726029, "score": 8.41}, {"name": "Kyle Schwarber", "team": "The Big Gamblino", "ab": 247, "r": 45, "hr": 25, "rbi": 43, "sb": 1, "avg": 0.263, "ops": 0.971, "z_r": 1.5784769884769743, "z_hr": 3.5672996042397567, "z_rbi": 1.5589177833176233, "z_sb": -0.6023313218289993, "z_avg": 0.3450928587848301, "z_ops": 1.8363871991730314, "z_total": 8.283843112163217, "score": 8.28}, {"name": "Jordan Walker", "team": "Pooh's On First", "ab": 258, "r": 39, "hr": 16, "rbi": 50, "sb": 9, "avg": 0.295, "ops": 0.877, "z_r": 1.0938817191240793, "z_hr": 1.7666849466717063, "z_rbi": 2.13307919458876, "z_sb": 1.069046463692443, "z_avg": 1.1405217228415014, "z_ops": 1.0646926594353163, "z_total": 8.267906706353806, "score": 8.27}, {"name": "Ben Rice", "team": "Phoenix Coyotes", "ab": 233, "r": 44, "hr": 18, "rbi": 41, "sb": 2, "avg": 0.279, "ops": 0.941, "z_r": 1.4977111102514917, "z_hr": 2.166821537242384, "z_rbi": 1.394871665811584, "z_sb": -0.393409098638819, "z_avg": 0.7428072908131665, "z_ops": 1.5901017077673774, "z_total": 6.998904213247185, "score": 7.0}, {"name": "Matt Olson", "team": "Pittsburgh Pirates", "ab": 255, "r": 47, "hr": 18, "rbi": 45, "sb": 2, "avg": 0.271, "ops": 0.878, "z_r": 1.7400087449279393, "z_hr": 2.166821537242384, "z_rbi": 1.7229639008236624, "z_sb": -0.393409098638819, "z_avg": 0.5439500747989983, "z_ops": 1.0729021758155046, "z_total": 6.853237334969669, "score": 6.85}], "top_pitchers": [{"name": "Jacob Misiorowski", "team": "Phoenix Coyotes", "ip": "82.0", "ip_dec": 82.0, "k": 120, "qs": 9, "sv": 0, "hd": 0, "era": 1.32, "whip": 0.72, "z_k": 3.2720427006502146, "z_qs": 2.398042177779836, "z_sv": -0.3944505292232283, "z_hd": -0.42215484336921344, "z_era": 1.5527543374617385, "z_whip": 1.7807859175568443, "z_total": 8.187019760856192, "score": 8.19}, {"name": "Louis Varland", "team": "Lets Go Bucs", "ip": "35.1", "ip_dec": 35.333333333333336, "k": 51, "qs": 0, "sv": 15, "hd": 4, "era": 1.02, "whip": 0.906, "z_k": 0.5492464698612114, "z_qs": -0.864988352691115, "z_sv": 3.516963275658113, "z_hd": 0.9814654797318001, "z_era": 1.7275168233577372, "z_whip": 1.1746348377407942, "z_total": 7.084838533658541, "score": 7.08}, {"name": "Cade Smith", "team": "Pittsburgh Piglets", "ip": "28.0", "ip_dec": 28.0, "k": 43, "qs": 0, "sv": 21, "hd": 0, "era": 1.29, "whip": 0.929, "z_k": 0.23355995034944288, "z_qs": -0.864988352691115, "z_sv": 5.081528797610649, "z_hd": -0.42215484336921344, "z_era": 1.5702305860513386, "z_whip": 1.099680671957089, "z_total": 6.697856809908192, "score": 6.7}, {"name": "Mason Miller", "team": "Phoenix Coyotes", "ip": "26.2", "ip_dec": 26.666666666666668, "k": 50, "qs": 0, "sv": 16, "hd": 0, "era": 1.01, "whip": 0.862, "z_k": 0.5097856549222403, "z_qs": -0.864988352691115, "z_sv": 3.7777241959835353, "z_hd": -0.42215484336921344, "z_era": 1.7333422395542706, "z_whip": 1.3180254157617954, "z_total": 6.051734310161512, "score": 6.05}, {"name": "Paul Skenes", "team": "All Betts Are Off", "ip": "82.1", "ip_dec": 82.33333333333333, "k": 101, "qs": 8, "sv": 0, "hd": 0, "era": 2.4, "whip": 0.862, "z_k": 2.5222872168097648, "z_qs": 2.03548322994973, "z_sv": -0.3944505292232283, "z_hd": -0.42215484336921344, "z_era": 0.9236093882361445, "z_whip": 1.3180254157617954, "z_total": 5.982799878164993, "score": 5.98}, {"name": "Cam Schlittler", "team": "Phoenix Coyotes", "ip": "83.1", "ip_dec": 83.33333333333333, "k": 94, "qs": 9, "sv": 0, "hd": 0, "era": 1.94, "whip": 0.984, "z_k": 2.246061512236967, "z_qs": 2.398042177779836, "z_sv": -0.3944505292232283, "z_hd": -0.42215484336921344, "z_era": 1.1915785332766753, "z_whip": 0.9204424494308381, "z_total": 5.939519300131874, "score": 5.94}, {"name": "Cristopher Sanchez", "team": "Phoenix Coyotes", "ip": "86.2", "ip_dec": 86.66666666666667, "k": 97, "qs": 10, "sv": 0, "hd": 0, "era": 2.08, "whip": 1.119, "z_k": 2.36444395705388, "z_qs": 2.7606011256099414, "z_sv": -0.3944505292232283, "z_hd": -0.42215484336921344, "z_era": 1.1100227065252093, "z_whip": 0.48049408504822116, "z_total": 5.898956501644809, "score": 5.9}, {"name": "Robert Suarez", "team": "Pittsburgh Piglets", "ip": "27.0", "ip_dec": 27.0, "k": 21, "qs": 0, "sv": 4, "hd": 11, "era": 0.67, "whip": 0.852, "z_k": -0.6345779783079205, "z_qs": -0.864988352691115, "z_sv": 0.6485931520784626, "z_hd": 3.4378010451585737, "z_era": 1.931406390236402, "z_whip": 1.3506141834938412, "z_total": 5.868848439968245, "score": 5.87}, {"name": "Jhoan Duran", "team": "Pittsburgh Pirates", "ip": "19.0", "ip_dec": 19.0, "k": 28, "qs": 0, "sv": 15, "hd": 0, "era": 0.47, "whip": 0.684, "z_k": -0.3583522737351231, "z_qs": -0.864988352691115, "z_sv": 3.516963275658113, "z_hd": -0.42215484336921344, "z_era": 2.0479147141670677, "z_whip": 1.8981054813922087, "z_total": 5.817488001421937, "score": 5.82}, {"name": "Bryan Baker", "team": "The Big Gamblino", "ip": "21.0", "ip_dec": 21.0, "k": 24, "qs": 0, "sv": 15, "hd": 1, "era": 0.86, "whip": 0.81, "z_k": -0.5161955334910073, "z_qs": -0.864988352691115, "z_sv": 3.516963275658113, "z_hd": -0.07124976259396006, "z_era": 1.8207234825022698, "z_whip": 1.4874870079684328, "z_total": 5.372740117352733, "score": 5.37}], "teams": {"The Big Gamblino": {"batters": [{"name": "Yordan Alvarez", "team": "The Big Gamblino", "ab": 251, "r": 42, "hr": 20, "rbi": 45, "sb": 0, "avg": 0.311, "ops": 0.998}, {"name": "James Wood", "team": "The Big Gamblino", "ab": 254, "r": 62, "hr": 18, "rbi": 42, "sb": 13, "avg": 0.295, "ops": 0.989}, {"name": "Kyle Schwarber", "team": "The Big Gamblino", "ab": 247, "r": 45, "hr": 25, "rbi": 43, "sb": 1, "avg": 0.263, "ops": 0.971}, {"name": "Willson Contreras", "team": "The Big Gamblino", "ab": 221, "r": 32, "hr": 15, "rbi": 42, "sb": 1, "avg": 0.308, "ops": 0.966}, {"name": "Corbin Carroll", "team": "The Big Gamblino", "ab": 239, "r": 39, "hr": 11, "rbi": 33, "sb": 8, "avg": 0.276, "ops": 0.899}, {"name": "CJ Abrams", "team": "The Big Gamblino", "ab": 244, "r": 41, "hr": 12, "rbi": 43, "sb": 10, "avg": 0.283, "ops": 0.857}, {"name": "Jeremy Pena", "team": "The Big Gamblino", "ab": 104, "r": 19, "hr": 5, "rbi": 14, "sb": 3, "avg": 0.298, "ops": 0.85}, {"name": "Dillon Dingler", "team": "The Big Gamblino", "ab": 194, "r": 27, "hr": 12, "rbi": 35, "sb": 0, "avg": 0.247, "ops": 0.834}, {"name": "Carlos Correa", "team": "The Big Gamblino", "ab": 84, "r": 14, "hr": 2, "rbi": 8, "sb": 0, "avg": 0.286, "ops": 0.82}, {"name": "Ozzie Albies", "team": "The Big Gamblino", "ab": 245, "r": 41, "hr": 8, "rbi": 34, "sb": 1, "avg": 0.273, "ops": 0.751}, {"name": "Ryan O'Hearn", "team": "The Big Gamblino", "ab": 199, "r": 28, "hr": 8, "rbi": 30, "sb": 1, "avg": 0.266, "ops": 0.739}, {"name": "JJ Wetherholt", "team": "The Big Gamblino", "ab": 182, "r": 29, "hr": 8, "rbi": 20, "sb": 3, "avg": 0.236, "ops": 0.738}, {"name": "Kazuma Okamoto", "team": "The Big Gamblino", "ab": 222, "r": 30, "hr": 12, "rbi": 38, "sb": 0, "avg": 0.225, "ops": 0.736}, {"name": "Wilyer Abreu", "team": "The Big Gamblino", "ab": 249, "r": 27, "hr": 6, "rbi": 29, "sb": 5, "avg": 0.253, "ops": 0.694}, {"name": "Salvador Perez", "team": "The Big Gamblino", "ab": 177, "r": 15, "hr": 6, "rbi": 19, "sb": 0, "avg": 0.186, "ops": 0.556}, {"name": "Jakob Marsee", "team": "The Big Gamblino", "ab": 115, "r": 20, "hr": 1, "rbi": 7, "sb": 10, "avg": 0.174, "ops": 0.543}], "pitchers": [{"name": "Chris Sale", "team": "The Big Gamblino", "ip": "72.0", "ip_dec": 72.0, "k": 90, "qs": 7, "sv": 0, "hd": 0, "era": 2.38, "whip": 1.125}, {"name": "Joe Ryan", "team": "The Big Gamblino", "ip": "78.0", "ip_dec": 78.0, "k": 89, "qs": 9, "sv": 0, "hd": 0, "era": 2.77, "whip": 0.962}, {"name": "Gavin Williams", "team": "The Big Gamblino", "ip": "79.2", "ip_dec": 79.66666666666667, "k": 86, "qs": 5, "sv": 0, "hd": 0, "era": 4.07, "whip": 1.142}, {"name": "Jesus Luzardo", "team": "The Big Gamblino", "ip": "73.0", "ip_dec": 73.0, "k": 79, "qs": 6, "sv": 0, "hd": 0, "era": 4.07, "whip": 1.37}, {"name": "Drew Rasmussen", "team": "The Big Gamblino", "ip": "64.0", "ip_dec": 64.0, "k": 67, "qs": 7, "sv": 0, "hd": 0, "era": 2.95, "whip": 0.953}, {"name": "George Kirby", "team": "The Big Gamblino", "ip": "78.0", "ip_dec": 78.0, "k": 67, "qs": 7, "sv": 0, "hd": 0, "era": 4.15, "whip": 1.359}, {"name": "Edward Cabrera", "team": "The Big Gamblino", "ip": "42.1", "ip_dec": 42.333333333333336, "k": 38, "qs": 3, "sv": 0, "hd": 0, "era": 5.1, "whip": 1.535}, {"name": "Brad Keller", "team": "The Big Gamblino", "ip": "25.1", "ip_dec": 25.333333333333332, "k": 27, "qs": 0, "sv": 3, "hd": 10, "era": 3.91, "whip": 1.382}, {"name": "Raisel Iglesias", "team": "The Big Gamblino", "ip": "20.1", "ip_dec": 20.333333333333332, "k": 26, "qs": 0, "sv": 14, "hd": 0, "era": 1.77, "whip": 1.23}, {"name": "Pete Fairbanks", "team": "The Big Gamblino", "ip": "18.0", "ip_dec": 18.0, "k": 25, "qs": 0, "sv": 9, "hd": 2, "era": 6.0, "whip": 1.333}, {"name": "Bryan Baker", "team": "The Big Gamblino", "ip": "21.0", "ip_dec": 21.0, "k": 24, "qs": 0, "sv": 15, "hd": 1, "era": 0.86, "whip": 0.81}, {"name": "Juan Morillo", "team": "The Big Gamblino", "ip": "13.1", "ip_dec": 13.333333333333334, "k": 23, "qs": 0, "sv": 0, "hd": 2, "era": 2.7, "whip": 1.275}, {"name": "Graham Ashcraft", "team": "The Big Gamblino", "ip": "16.0", "ip_dec": 16.0, "k": 19, "qs": 0, "sv": 1, "hd": 4, "era": 2.25, "whip": 1.0}, {"name": "Hogan Harris", "team": "The Big Gamblino", "ip": "11.0", "ip_dec": 11.0, "k": 19, "qs": 0, "sv": 3, "hd": 2, "era": 6.55, "whip": 2.273}, {"name": "Jakob Junis", "team": "The Big Gamblino", "ip": "24.0", "ip_dec": 24.0, "k": 18, "qs": 0, "sv": 2, "hd": 6, "era": 2.62, "whip": 1.0}, {"name": "Jared Jones", "team": "The Big Gamblino", "ip": "13.1", "ip_dec": 13.333333333333334, "k": 14, "qs": 0, "sv": 0, "hd": 0, "era": 6.75, "whip": 1.8}, {"name": "Ryan Helsley", "team": "The Big Gamblino", "ip": "10.0", "ip_dec": 10.0, "k": 13, "qs": 0, "sv": 5, "hd": 0, "era": 5.4, "whip": 1.5}, {"name": "Tyler Alexander", "team": "The Big Gamblino", "ip": "15.1", "ip_dec": 15.333333333333334, "k": 11, "qs": 0, "sv": 0, "hd": 3, "era": 2.35, "whip": 1.435}, {"name": "Will Vest", "team": "The Big Gamblino", "ip": "7.2", "ip_dec": 7.666666666666667, "k": 9, "qs": 0, "sv": 0, "hd": 2, "era": 5.87, "whip": 1.565}]}, "Pooh's On First": {"batters": [{"name": "Munetaka Murakami", "team": "Pooh's On First", "ab": 166, "r": 36, "hr": 16, "rbi": 34, "sb": 1, "avg": 0.241, "ops": 0.932}, {"name": "Pete Crow-Armstrong", "team": "Pooh's On First", "ab": 256, "r": 42, "hr": 16, "rbi": 37, "sb": 15, "avg": 0.293, "ops": 0.922}, {"name": "Sam Antonacci", "team": "Pooh's On First", "ab": 64, "r": 14, "hr": 3, "rbi": 6, "sb": 1, "avg": 0.297, "ops": 0.898}, {"name": "Junior Caminero", "team": "Pooh's On First", "ab": 240, "r": 40, "hr": 14, "rbi": 32, "sb": 0, "avg": 0.287, "ops": 0.884}, {"name": "Jordan Walker", "team": "Pooh's On First", "ab": 258, "r": 39, "hr": 16, "rbi": 50, "sb": 9, "avg": 0.295, "ops": 0.877}, {"name": "Bobby Witt Jr", "team": "Pooh's On First", "ab": 266, "r": 39, "hr": 10, "rbi": 29, "sb": 24, "avg": 0.301, "ops": 0.864}, {"name": "Shea Langeliers", "team": "Pooh's On First", "ab": 256, "r": 42, "hr": 14, "rbi": 32, "sb": 1, "avg": 0.266, "ops": 0.821}, {"name": "Oneil Cruz", "team": "Pooh's On First", "ab": 215, "r": 36, "hr": 10, "rbi": 34, "sb": 21, "avg": 0.256, "ops": 0.786}, {"name": "Colt Emerson", "team": "Pooh's On First", "ab": 85, "r": 11, "hr": 5, "rbi": 13, "sb": 1, "avg": 0.224, "ops": 0.771}, {"name": "Jacob Wilson", "team": "Pooh's On First", "ab": 143, "r": 18, "hr": 4, "rbi": 21, "sb": 2, "avg": 0.294, "ops": 0.75}, {"name": "Teoscar Hernandez", "team": "Pooh's On First", "ab": 146, "r": 25, "hr": 6, "rbi": 28, "sb": 2, "avg": 0.253, "ops": 0.749}, {"name": "Konnor Griffin", "team": "Pooh's On First", "ab": 180, "r": 29, "hr": 4, "rbi": 21, "sb": 14, "avg": 0.278, "ops": 0.74}, {"name": "Vladimir Guerrero Jr", "team": "Pooh's On First", "ab": 234, "r": 39, "hr": 3, "rbi": 27, "sb": 5, "avg": 0.278, "ops": 0.722}, {"name": "Kyle Stowers", "team": "Pooh's On First", "ab": 121, "r": 15, "hr": 3, "rbi": 11, "sb": 0, "avg": 0.231, "ops": 0.695}, {"name": "Ezequiel Duran", "team": "Pooh's On First", "ab": 59, "r": 6, "hr": 1, "rbi": 7, "sb": 0, "avg": 0.237, "ops": 0.657}, {"name": "Roman Anthony", "team": "Pooh's On First", "ab": 75, "r": 9, "hr": 0, "rbi": 3, "sb": 2, "avg": 0.227, "ops": 0.657}, {"name": "Curtis Mead", "team": "Pooh's On First", "ab": 57, "r": 7, "hr": 3, "rbi": 9, "sb": 0, "avg": 0.193, "ops": 0.645}, {"name": "Jackson Merrill", "team": "Pooh's On First", "ab": 239, "r": 25, "hr": 6, "rbi": 25, "sb": 14, "avg": 0.218, "ops": 0.632}, {"name": "Cole Young", "team": "Pooh's On First", "ab": 162, "r": 13, "hr": 3, "rbi": 15, "sb": 0, "avg": 0.235, "ops": 0.626}, {"name": "Luis Robert Jr", "team": "Pooh's On First", "ab": 55, "r": 4, "hr": 1, "rbi": 2, "sb": 0, "avg": 0.164, "ops": 0.506}, {"name": "Jeremiah Jackson", "team": "Pooh's On First", "ab": 66, "r": 5, "hr": 2, "rbi": 10, "sb": 1, "avg": 0.182, "ops": 0.505}], "pitchers": [{"name": "Dylan Cease", "team": "Pooh's On First", "ip": "63.1", "ip_dec": 63.333333333333336, "k": 92, "qs": 5, "sv": 0, "hd": 0, "era": 2.7, "whip": 1.168}, {"name": "Braxton Ashcraft", "team": "Pooh's On First", "ip": "78.2", "ip_dec": 78.66666666666667, "k": 86, "qs": 7, "sv": 0, "hd": 0, "era": 3.32, "whip": 1.119}, {"name": "Nolan McLean", "team": "Pooh's On First", "ip": "73.0", "ip_dec": 73.0, "k": 85, "qs": 7, "sv": 0, "hd": 0, "era": 3.82, "whip": 1.123}, {"name": "Sandy Alcantara", "team": "Pooh's On First", "ip": "87.1", "ip_dec": 87.33333333333333, "k": 65, "qs": 9, "sv": 0, "hd": 0, "era": 4.95, "whip": 1.363}, {"name": "Bubba Chandler", "team": "Pooh's On First", "ip": "64.2", "ip_dec": 64.66666666666667, "k": 60, "qs": 2, "sv": 0, "hd": 0, "era": 5.01, "whip": 1.392}, {"name": "Eury Perez", "team": "Pooh's On First", "ip": "51.2", "ip_dec": 51.666666666666664, "k": 60, "qs": 3, "sv": 0, "hd": 0, "era": 4.35, "whip": 1.258}, {"name": "Reid Detmers", "team": "Pooh's On First", "ip": "57.1", "ip_dec": 57.333333333333336, "k": 60, "qs": 4, "sv": 0, "hd": 0, "era": 4.08, "whip": 1.099}, {"name": "Landen Roupp", "team": "Pooh's On First", "ip": "47.2", "ip_dec": 47.666666666666664, "k": 54, "qs": 3, "sv": 0, "hd": 0, "era": 4.91, "whip": 1.385}, {"name": "Roki Sasaki", "team": "Pooh's On First", "ip": "48.0", "ip_dec": 48.0, "k": 52, "qs": 2, "sv": 0, "hd": 0, "era": 4.31, "whip": 1.25}, {"name": "Dustin May", "team": "Pooh's On First", "ip": "45.0", "ip_dec": 45.0, "k": 50, "qs": 5, "sv": 0, "hd": 0, "era": 2.6, "whip": 0.822}, {"name": "Adrian Morejon", "team": "Pooh's On First", "ip": "29.2", "ip_dec": 29.666666666666668, "k": 42, "qs": 0, "sv": 1, "hd": 11, "era": 4.25, "whip": 1.146}, {"name": "Zac Gallen", "team": "Pooh's On First", "ip": "54.1", "ip_dec": 54.333333333333336, "k": 39, "qs": 1, "sv": 0, "hd": 0, "era": 5.63, "whip": 1.601}, {"name": "Clay Holmes", "team": "Pooh's On First", "ip": "40.0", "ip_dec": 40.0, "k": 36, "qs": 3, "sv": 0, "hd": 0, "era": 2.7, "whip": 1.15}, {"name": "Erik Sabrowski", "team": "Pooh's On First", "ip": "14.1", "ip_dec": 14.333333333333334, "k": 32, "qs": 0, "sv": 0, "hd": 13, "era": 2.51, "whip": 1.186}, {"name": "Seranthony Dominguez", "team": "Pooh's On First", "ip": "23.1", "ip_dec": 23.333333333333332, "k": 28, "qs": 0, "sv": 11, "hd": 2, "era": 3.47, "whip": 1.114}, {"name": "Walbert Urena", "team": "Pooh's On First", "ip": "28.0", "ip_dec": 28.0, "k": 27, "qs": 2, "sv": 0, "hd": 0, "era": 2.57, "whip": 1.107}, {"name": "Gregory Soto", "team": "Pooh's On First", "ip": "26.0", "ip_dec": 26.0, "k": 26, "qs": 0, "sv": 10, "hd": 6, "era": 2.42, "whip": 0.846}, {"name": "Brandon Woodruff", "team": "Pooh's On First", "ip": "25.0", "ip_dec": 25.0, "k": 19, "qs": 2, "sv": 0, "hd": 0, "era": 3.6, "whip": 1.08}, {"name": "Kenley Jansen", "team": "Pooh's On First", "ip": "16.1", "ip_dec": 16.333333333333332, "k": 17, "qs": 0, "sv": 8, "hd": 1, "era": 2.76, "whip": 0.98}, {"name": "Andrew Painter", "team": "Pooh's On First", "ip": "18.2", "ip_dec": 18.666666666666668, "k": 13, "qs": 0, "sv": 0, "hd": 0, "era": 6.27, "whip": 1.661}, {"name": "Rhett Lowder", "team": "Pooh's On First", "ip": "12.1", "ip_dec": 12.333333333333334, "k": 11, "qs": 1, "sv": 0, "hd": 0, "era": 8.03, "whip": 1.865}, {"name": "Antonio Senzatela", "team": "Pooh's On First", "ip": "11.0", "ip_dec": 11.0, "k": 7, "qs": 0, "sv": 0, "hd": 1, "era": 4.91, "whip": 1.636}, {"name": "Jack Perkins", "team": "Pooh's On First", "ip": "7.0", "ip_dec": 7.0, "k": 7, "qs": 0, "sv": 0, "hd": 2, "era": 10.29, "whip": 2.0}, {"name": "Keider Montero", "team": "Pooh's On First", "ip": "15.2", "ip_dec": 15.666666666666666, "k": 7, "qs": 1, "sv": 0, "hd": 0, "era": 5.17, "whip": 1.085}, {"name": "Carmen Mlodzinski", "team": "Pooh's On First", "ip": "8.2", "ip_dec": 8.666666666666666, "k": 6, "qs": 0, "sv": 0, "hd": 0, "era": 5.19, "whip": 1.615}, {"name": "Keaton Winn", "team": "Pooh's On First", "ip": "9.1", "ip_dec": 9.333333333333334, "k": 6, "qs": 0, "sv": 1, "hd": 1, "era": 5.79, "whip": 1.393}, {"name": "Brady Singer", "team": "Pooh's On First", "ip": "6.0", "ip_dec": 6.0, "k": 2, "qs": 1, "sv": 0, "hd": 0, "era": 4.5, "whip": 1.5}]}, "Phoenix Coyotes": {"batters": [{"name": "Juan Soto", "team": "Phoenix Coyotes", "ab": 185, "r": 33, "hr": 16, "rbi": 33, "sb": 6, "avg": 0.292, "ops": 0.984}, {"name": "Ben Rice", "team": "Phoenix Coyotes", "ab": 233, "r": 44, "hr": 18, "rbi": 41, "sb": 2, "avg": 0.279, "ops": 0.941}, {"name": "Elly De La Cruz", "team": "Phoenix Coyotes", "ab": 195, "r": 34, "hr": 9, "rbi": 32, "sb": 9, "avg": 0.287, "ops": 0.87}, {"name": "Mike Trout", "team": "Phoenix Coyotes", "ab": 232, "r": 46, "hr": 15, "rbi": 33, "sb": 5, "avg": 0.237, "ops": 0.863}, {"name": "Drake Baldwin", "team": "Phoenix Coyotes", "ab": 166, "r": 31, "hr": 10, "rbi": 27, "sb": 1, "avg": 0.283, "ops": 0.861}, {"name": "Casey Schmitt", "team": "Phoenix Coyotes", "ab": 177, "r": 22, "hr": 12, "rbi": 27, "sb": 6, "avg": 0.288, "ops": 0.829}, {"name": "Brice Turang", "team": "Phoenix Coyotes", "ab": 232, "r": 47, "hr": 10, "rbi": 40, "sb": 9, "avg": 0.254, "ops": 0.806}, {"name": "Isaac Paredes", "team": "Phoenix Coyotes", "ab": 187, "r": 22, "hr": 8, "rbi": 26, "sb": 0, "avg": 0.241, "ops": 0.766}, {"name": "Andy Pages", "team": "Phoenix Coyotes", "ab": 261, "r": 37, "hr": 12, "rbi": 47, "sb": 6, "avg": 0.241, "ops": 0.737}, {"name": "Brandon Nimmo", "team": "Phoenix Coyotes", "ab": 251, "r": 22, "hr": 6, "rbi": 22, "sb": 1, "avg": 0.243, "ops": 0.698}, {"name": "Chase DeLauter", "team": "Phoenix Coyotes", "ab": 208, "r": 17, "hr": 2, "rbi": 25, "sb": 2, "avg": 0.255, "ops": 0.686}, {"name": "Spencer Steer", "team": "Phoenix Coyotes", "ab": 87, "r": 17, "hr": 5, "rbi": 13, "sb": 0, "avg": 0.184, "ops": 0.685}, {"name": "Angel Martinez", "team": "Phoenix Coyotes", "ab": 156, "r": 16, "hr": 8, "rbi": 24, "sb": 2, "avg": 0.212, "ops": 0.674}, {"name": "Jac Caglianone", "team": "Phoenix Coyotes", "ab": 172, "r": 19, "hr": 7, "rbi": 15, "sb": 1, "avg": 0.221, "ops": 0.662}, {"name": "A.J. Ewing", "team": "Phoenix Coyotes", "ab": 93, "r": 10, "hr": 1, "rbi": 5, "sb": 6, "avg": 0.258, "ops": 0.644}, {"name": "Matt McLain", "team": "Phoenix Coyotes", "ab": 89, "r": 9, "hr": 2, "rbi": 8, "sb": 4, "avg": 0.169, "ops": 0.568}, {"name": "Lawrence Butler", "team": "Phoenix Coyotes", "ab": 68, "r": 6, "hr": 2, "rbi": 8, "sb": 4, "avg": 0.176, "ops": 0.543}, {"name": "Spencer Torkelson", "team": "Phoenix Coyotes", "ab": 81, "r": 4, "hr": 1, "rbi": 7, "sb": 0, "avg": 0.16, "ops": 0.525}, {"name": "Jake Burger", "team": "Phoenix Coyotes", "ab": 74, "r": 5, "hr": 3, "rbi": 13, "sb": 0, "avg": 0.176, "ops": 0.516}, {"name": "Cam Smith", "team": "Phoenix Coyotes", "ab": 51, "r": 6, "hr": 0, "rbi": 5, "sb": 1, "avg": 0.196, "ops": 0.503}], "pitchers": [{"name": "Jacob Misiorowski", "team": "Phoenix Coyotes", "ip": "82.0", "ip_dec": 82.0, "k": 120, "qs": 9, "sv": 0, "hd": 0, "era": 1.32, "whip": 0.72}, {"name": "Cristopher Sanchez", "team": "Phoenix Coyotes", "ip": "86.2", "ip_dec": 86.66666666666667, "k": 97, "qs": 10, "sv": 0, "hd": 0, "era": 2.08, "whip": 1.119}, {"name": "Cam Schlittler", "team": "Phoenix Coyotes", "ip": "83.1", "ip_dec": 83.33333333333333, "k": 94, "qs": 9, "sv": 0, "hd": 0, "era": 1.94, "whip": 0.984}, {"name": "Kyle Bradish", "team": "Phoenix Coyotes", "ip": "66.1", "ip_dec": 66.33333333333333, "k": 71, "qs": 5, "sv": 0, "hd": 0, "era": 3.8, "whip": 1.508}, {"name": "Bryan Woo", "team": "Phoenix Coyotes", "ip": "71.1", "ip_dec": 71.33333333333333, "k": 69, "qs": 7, "sv": 0, "hd": 0, "era": 4.16, "whip": 1.037}, {"name": "Kevin Gausman", "team": "Phoenix Coyotes", "ip": "77.0", "ip_dec": 77.0, "k": 68, "qs": 6, "sv": 0, "hd": 0, "era": 4.68, "whip": 1.286}, {"name": "Connelly Early", "team": "Phoenix Coyotes", "ip": "56.0", "ip_dec": 56.0, "k": 54, "qs": 4, "sv": 0, "hd": 0, "era": 4.82, "whip": 1.393}, {"name": "Kyle Harrison", "team": "Phoenix Coyotes", "ip": "48.2", "ip_dec": 48.666666666666664, "k": 52, "qs": 5, "sv": 0, "hd": 0, "era": 2.59, "whip": 1.007}, {"name": "Mason Miller", "team": "Phoenix Coyotes", "ip": "26.2", "ip_dec": 26.666666666666668, "k": 50, "qs": 0, "sv": 16, "hd": 0, "era": 1.01, "whip": 0.862}, {"name": "Payton Tolle", "team": "Phoenix Coyotes", "ip": "47.1", "ip_dec": 47.333333333333336, "k": 45, "qs": 4, "sv": 0, "hd": 0, "era": 3.23, "whip": 1.099}, {"name": "Kris Bubic", "team": "Phoenix Coyotes", "ip": "39.1", "ip_dec": 39.333333333333336, "k": 39, "qs": 3, "sv": 0, "hd": 0, "era": 4.12, "whip": 1.271}, {"name": "Nick Lodolo", "team": "Phoenix Coyotes", "ip": "37.1", "ip_dec": 37.333333333333336, "k": 30, "qs": 2, "sv": 0, "hd": 0, "era": 6.03, "whip": 1.661}, {"name": "Paul Sewald", "team": "Phoenix Coyotes", "ip": "24.1", "ip_dec": 24.333333333333332, "k": 25, "qs": 0, "sv": 15, "hd": 0, "era": 2.96, "whip": 0.781}, {"name": "Garrett Whitlock", "team": "Phoenix Coyotes", "ip": "19.2", "ip_dec": 19.666666666666668, "k": 24, "qs": 0, "sv": 0, "hd": 8, "era": 3.2, "whip": 0.966}, {"name": "Noah Schultz", "team": "Phoenix Coyotes", "ip": "25.0", "ip_dec": 25.0, "k": 23, "qs": 2, "sv": 0, "hd": 0, "era": 4.68, "whip": 1.32}, {"name": "Lucas Erceg", "team": "Phoenix Coyotes", "ip": "18.2", "ip_dec": 18.666666666666668, "k": 18, "qs": 0, "sv": 9, "hd": 0, "era": 5.3, "whip": 1.714}, {"name": "Daniel Palencia", "team": "Phoenix Coyotes", "ip": "13.2", "ip_dec": 13.666666666666666, "k": 16, "qs": 0, "sv": 2, "hd": 0, "era": 2.63, "whip": 1.244}, {"name": "Bryan King", "team": "Phoenix Coyotes", "ip": "14.1", "ip_dec": 14.333333333333334, "k": 12, "qs": 0, "sv": 2, "hd": 4, "era": 3.77, "whip": 1.674}, {"name": "Logan Henderson", "team": "Phoenix Coyotes", "ip": "5.0", "ip_dec": 5.0, "k": 7, "qs": 0, "sv": 0, "hd": 0, "era": 0.0, "whip": 1.0}, {"name": "Gage Jump", "team": "Phoenix Coyotes", "ip": "5.0", "ip_dec": 5.0, "k": 6, "qs": 0, "sv": 0, "hd": 0, "era": 5.4, "whip": 1.2}, {"name": "Robby Snelling", "team": "Phoenix Coyotes", "ip": "5.0", "ip_dec": 5.0, "k": 2, "qs": 0, "sv": 0, "hd": 0, "era": 5.4, "whip": 1.8}]}, "Pittsburgh Piglets": {"batters": [{"name": "Nick Kurtz", "team": "Pittsburgh Piglets", "ab": 236, "r": 47, "hr": 17, "rbi": 57, "sb": 5, "avg": 0.309, "ops": 1.043}, {"name": "Byron Buxton", "team": "Pittsburgh Piglets", "ab": 236, "r": 49, "hr": 24, "rbi": 39, "sb": 7, "avg": 0.288, "ops": 0.988}, {"name": "Shohei Ohtani", "team": "Pittsburgh Piglets", "ab": 190, "r": 37, "hr": 8, "rbi": 29, "sb": 5, "avg": 0.3, "ops": 0.924}, {"name": "Ian Happ", "team": "Pittsburgh Piglets", "ab": 234, "r": 46, "hr": 12, "rbi": 30, "sb": 4, "avg": 0.239, "ops": 0.819}, {"name": "Brandon Marsh", "team": "Pittsburgh Piglets", "ab": 131, "r": 20, "hr": 5, "rbi": 15, "sb": 4, "avg": 0.298, "ops": 0.806}, {"name": "Michael Busch", "team": "Pittsburgh Piglets", "ab": 155, "r": 16, "hr": 5, "rbi": 25, "sb": 2, "avg": 0.245, "ops": 0.802}, {"name": "Jung Hoo Lee", "team": "Pittsburgh Piglets", "ab": 177, "r": 25, "hr": 3, "rbi": 19, "sb": 4, "avg": 0.328, "ops": 0.799}, {"name": "Jose Caballero", "team": "Pittsburgh Piglets", "ab": 140, "r": 22, "hr": 6, "rbi": 18, "sb": 7, "avg": 0.271, "ops": 0.769}, {"name": "Adley Rutschman", "team": "Pittsburgh Piglets", "ab": 176, "r": 23, "hr": 7, "rbi": 36, "sb": 0, "avg": 0.239, "ops": 0.742}, {"name": "Geraldo Perdomo", "team": "Pittsburgh Piglets", "ab": 208, "r": 32, "hr": 3, "rbi": 24, "sb": 8, "avg": 0.24, "ops": 0.72}, {"name": "Miguel Vargas", "team": "Pittsburgh Piglets", "ab": 177, "r": 26, "hr": 8, "rbi": 20, "sb": 6, "avg": 0.215, "ops": 0.717}, {"name": "Jazz Chisholm Jr", "team": "Pittsburgh Piglets", "ab": 189, "r": 31, "hr": 9, "rbi": 20, "sb": 16, "avg": 0.212, "ops": 0.713}, {"name": "Nick Gonzales", "team": "Pittsburgh Piglets", "ab": 159, "r": 24, "hr": 2, "rbi": 18, "sb": 1, "avg": 0.27, "ops": 0.674}, {"name": "Eugenio Suarez", "team": "Pittsburgh Piglets", "ab": 96, "r": 10, "hr": 3, "rbi": 12, "sb": 0, "avg": 0.219, "ops": 0.657}, {"name": "Jorge Soler", "team": "Pittsburgh Piglets", "ab": 77, "r": 9, "hr": 3, "rbi": 8, "sb": 0, "avg": 0.195, "ops": 0.64}, {"name": "Trevor Story", "team": "Pittsburgh Piglets", "ab": 92, "r": 12, "hr": 2, "rbi": 16, "sb": 3, "avg": 0.239, "ops": 0.636}, {"name": "Nolan Gorman", "team": "Pittsburgh Piglets", "ab": 91, "r": 7, "hr": 3, "rbi": 11, "sb": 0, "avg": 0.187, "ops": 0.576}, {"name": "Austin Martin", "team": "Pittsburgh Piglets", "ab": 57, "r": 7, "hr": 1, "rbi": 5, "sb": 0, "avg": 0.158, "ops": 0.468}], "pitchers": [{"name": "Jose Soriano", "team": "Pittsburgh Piglets", "ip": "73.1", "ip_dec": 73.33333333333333, "k": 80, "qs": 3, "sv": 0, "hd": 0, "era": 3.56, "whip": 1.364}, {"name": "Shohei Ohtani", "team": "Pittsburgh Piglets", "ip": "61.2", "ip_dec": 61.666666666666664, "k": 65, "qs": 8, "sv": 0, "hd": 0, "era": 1.75, "whip": 0.908}, {"name": "Emmet Sheehan", "team": "Pittsburgh Piglets", "ip": "55.1", "ip_dec": 55.333333333333336, "k": 64, "qs": 5, "sv": 0, "hd": 0, "era": 4.23, "whip": 1.084}, {"name": "Freddy Peralta", "team": "Pittsburgh Piglets", "ip": "69.2", "ip_dec": 69.66666666666667, "k": 61, "qs": 4, "sv": 0, "hd": 0, "era": 5.04, "whip": 1.407}, {"name": "Shane McClanahan", "team": "Pittsburgh Piglets", "ip": "53.2", "ip_dec": 53.666666666666664, "k": 53, "qs": 1, "sv": 0, "hd": 0, "era": 3.19, "whip": 1.211}, {"name": "Logan Webb", "team": "Pittsburgh Piglets", "ip": "57.1", "ip_dec": 57.333333333333336, "k": 50, "qs": 6, "sv": 0, "hd": 0, "era": 2.98, "whip": 1.081}, {"name": "Cade Smith", "team": "Pittsburgh Piglets", "ip": "28.0", "ip_dec": 28.0, "k": 43, "qs": 0, "sv": 21, "hd": 0, "era": 1.29, "whip": 0.929}, {"name": "Casey Mize", "team": "Pittsburgh Piglets", "ip": "39.2", "ip_dec": 39.666666666666664, "k": 39, "qs": 3, "sv": 0, "hd": 0, "era": 2.72, "whip": 1.084}, {"name": "Eduardo Rodriguez", "team": "Pittsburgh Piglets", "ip": "51.0", "ip_dec": 51.0, "k": 37, "qs": 4, "sv": 0, "hd": 0, "era": 3.53, "whip": 1.412}, {"name": "Luis Castillo", "team": "Pittsburgh Piglets", "ip": "40.0", "ip_dec": 40.0, "k": 37, "qs": 0, "sv": 0, "hd": 0, "era": 6.52, "whip": 1.5}, {"name": "Ben Brown", "team": "Pittsburgh Piglets", "ip": "38.0", "ip_dec": 38.0, "k": 33, "qs": 3, "sv": 0, "hd": 1, "era": 1.89, "whip": 1.0}, {"name": "Andrew Abbott", "team": "Pittsburgh Piglets", "ip": "41.2", "ip_dec": 41.666666666666664, "k": 32, "qs": 3, "sv": 0, "hd": 0, "era": 4.54, "whip": 1.464}, {"name": "Ian Seymour", "team": "Pittsburgh Piglets", "ip": "26.2", "ip_dec": 26.666666666666668, "k": 26, "qs": 0, "sv": 2, "hd": 2, "era": 4.73, "whip": 1.2}, {"name": "Grant Holmes", "team": "Pittsburgh Piglets", "ip": "19.1", "ip_dec": 19.333333333333332, "k": 21, "qs": 0, "sv": 0, "hd": 0, "era": 6.05, "whip": 1.603}, {"name": "Robert Suarez", "team": "Pittsburgh Piglets", "ip": "27.0", "ip_dec": 27.0, "k": 21, "qs": 0, "sv": 4, "hd": 11, "era": 0.67, "whip": 0.852}, {"name": "Jack Dreyer", "team": "Pittsburgh Piglets", "ip": "17.2", "ip_dec": 17.666666666666668, "k": 20, "qs": 0, "sv": 0, "hd": 2, "era": 2.55, "whip": 1.019}, {"name": "Bryan Abreu", "team": "Pittsburgh Piglets", "ip": "15.1", "ip_dec": 15.333333333333334, "k": 17, "qs": 0, "sv": 2, "hd": 3, "era": 3.52, "whip": 1.696}, {"name": "Fernando Cruz", "team": "Pittsburgh Piglets", "ip": "11.2", "ip_dec": 11.666666666666666, "k": 15, "qs": 0, "sv": 1, "hd": 2, "era": 2.31, "whip": 1.371}, {"name": "Sean Newcomb", "team": "Pittsburgh Piglets", "ip": "8.2", "ip_dec": 8.666666666666666, "k": 7, "qs": 0, "sv": 0, "hd": 0, "era": 2.08, "whip": 0.692}, {"name": "Eduard Bazardo", "team": "Pittsburgh Piglets", "ip": "8.0", "ip_dec": 8.0, "k": 6, "qs": 0, "sv": 0, "hd": 4, "era": 2.25, "whip": 1.0}, {"name": "Brandon Young", "team": "Pittsburgh Piglets", "ip": "6.0", "ip_dec": 6.0, "k": 2, "qs": 1, "sv": 0, "hd": 0, "era": 4.5, "whip": 1.333}]}, "The Chicago Orphans": {"batters": [{"name": "Bryce Eldridge", "team": "The Chicago Orphans", "ab": 51, "r": 8, "hr": 4, "rbi": 10, "sb": 0, "avg": 0.333, "ops": 1.032}, {"name": "Bryce Harper", "team": "The Chicago Orphans", "ab": 212, "r": 41, "hr": 12, "rbi": 35, "sb": 5, "avg": 0.269, "ops": 0.888}, {"name": "Cody Bellinger", "team": "The Chicago Orphans", "ab": 242, "r": 38, "hr": 10, "rbi": 46, "sb": 6, "avg": 0.277, "ops": 0.84}, {"name": "Hunter Goodman", "team": "The Chicago Orphans", "ab": 214, "r": 36, "hr": 18, "rbi": 33, "sb": 3, "avg": 0.234, "ops": 0.84}, {"name": "Luis Arraez", "team": "The Chicago Orphans", "ab": 252, "r": 36, "hr": 3, "rbi": 27, "sb": 4, "avg": 0.329, "ops": 0.831}, {"name": "Kevin McGonigle", "team": "The Chicago Orphans", "ab": 230, "r": 41, "hr": 6, "rbi": 19, "sb": 9, "avg": 0.274, "ops": 0.802}, {"name": "Seiya Suzuki", "team": "The Chicago Orphans", "ab": 223, "r": 34, "hr": 10, "rbi": 31, "sb": 0, "avg": 0.265, "ops": 0.797}, {"name": "Julio Rodriguez", "team": "The Chicago Orphans", "ab": 269, "r": 37, "hr": 14, "rbi": 35, "sb": 10, "avg": 0.26, "ops": 0.79}, {"name": "Liam Hicks", "team": "The Chicago Orphans", "ab": 222, "r": 33, "hr": 10, "rbi": 41, "sb": 1, "avg": 0.27, "ops": 0.79}, {"name": "Sal Stewart", "team": "The Chicago Orphans", "ab": 252, "r": 35, "hr": 12, "rbi": 48, "sb": 10, "avg": 0.238, "ops": 0.757}, {"name": "Brent Rooker", "team": "The Chicago Orphans", "ab": 92, "r": 10, "hr": 5, "rbi": 15, "sb": 2, "avg": 0.217, "ops": 0.743}, {"name": "Xavier Edwards", "team": "The Chicago Orphans", "ab": 246, "r": 34, "hr": 5, "rbi": 21, "sb": 9, "avg": 0.26, "ops": 0.739}, {"name": "Jo Adell", "team": "The Chicago Orphans", "ab": 257, "r": 28, "hr": 9, "rbi": 34, "sb": 3, "avg": 0.241, "ops": 0.688}, {"name": "Luke Keaschall", "team": "The Chicago Orphans", "ab": 125, "r": 20, "hr": 1, "rbi": 14, "sb": 6, "avg": 0.216, "ops": 0.57}, {"name": "Ildemaro Vargas", "team": "The Chicago Orphans", "ab": 137, "r": 14, "hr": 2, "rbi": 19, "sb": 1, "avg": 0.226, "ops": 0.569}, {"name": "Steven Kwan", "team": "The Chicago Orphans", "ab": 178, "r": 23, "hr": 1, "rbi": 10, "sb": 2, "avg": 0.202, "ops": 0.562}], "pitchers": [{"name": "MacKenzie Gore", "team": "The Chicago Orphans", "ip": "65.2", "ip_dec": 65.66666666666667, "k": 68, "qs": 3, "sv": 0, "hd": 0, "era": 4.11, "whip": 1.31}, {"name": "Emerson Hancock", "team": "The Chicago Orphans", "ip": "72.1", "ip_dec": 72.33333333333333, "k": 67, "qs": 6, "sv": 0, "hd": 0, "era": 4.11, "whip": 1.106}, {"name": "Tanner Bibee", "team": "The Chicago Orphans", "ip": "80.1", "ip_dec": 80.33333333333333, "k": 67, "qs": 8, "sv": 0, "hd": 0, "era": 4.03, "whip": 1.158}, {"name": "Michael Wacha", "team": "The Chicago Orphans", "ip": "88.0", "ip_dec": 88.0, "k": 65, "qs": 9, "sv": 0, "hd": 0, "era": 3.89, "whip": 1.205}, {"name": "Zack Wheeler", "team": "The Chicago Orphans", "ip": "62.2", "ip_dec": 62.666666666666664, "k": 62, "qs": 8, "sv": 0, "hd": 0, "era": 2.01, "whip": 0.846}, {"name": "Bryce Elder", "team": "The Chicago Orphans", "ip": "73.1", "ip_dec": 73.33333333333333, "k": 60, "qs": 8, "sv": 0, "hd": 0, "era": 3.8, "whip": 1.227}, {"name": "Randy Vasquez", "team": "The Chicago Orphans", "ip": "65.2", "ip_dec": 65.66666666666667, "k": 48, "qs": 2, "sv": 0, "hd": 0, "era": 4.8, "whip": 1.477}, {"name": "J.T. Ginn", "team": "The Chicago Orphans", "ip": "39.1", "ip_dec": 39.333333333333336, "k": 39, "qs": 4, "sv": 0, "hd": 0, "era": 3.2, "whip": 1.22}, {"name": "Max Fried", "team": "The Chicago Orphans", "ip": "41.2", "ip_dec": 41.666666666666664, "k": 36, "qs": 3, "sv": 0, "hd": 0, "era": 4.1, "whip": 1.128}, {"name": "Devin Williams", "team": "The Chicago Orphans", "ip": "20.1", "ip_dec": 20.333333333333332, "k": 33, "qs": 0, "sv": 9, "hd": 0, "era": 5.31, "whip": 1.426}, {"name": "Cole Ragans", "team": "The Chicago Orphans", "ip": "25.1", "ip_dec": 25.333333333333332, "k": 32, "qs": 2, "sv": 0, "hd": 0, "era": 5.33, "whip": 1.382}, {"name": "Dylan Lee", "team": "The Chicago Orphans", "ip": "15.1", "ip_dec": 15.333333333333334, "k": 23, "qs": 0, "sv": 0, "hd": 10, "era": 1.17, "whip": 0.913}, {"name": "Garrett Crochet", "team": "The Chicago Orphans", "ip": "19.0", "ip_dec": 19.0, "k": 22, "qs": 2, "sv": 0, "hd": 0, "era": 8.05, "whip": 1.737}, {"name": "Jacob Latz", "team": "The Chicago Orphans", "ip": "18.0", "ip_dec": 18.0, "k": 21, "qs": 0, "sv": 10, "hd": 0, "era": 0.5, "whip": 0.5}, {"name": "Kevin Kelly", "team": "The Chicago Orphans", "ip": "14.2", "ip_dec": 14.666666666666666, "k": 13, "qs": 0, "sv": 0, "hd": 8, "era": 2.45, "whip": 1.159}, {"name": "Joel Kuhnel", "team": "The Chicago Orphans", "ip": "18.2", "ip_dec": 18.666666666666668, "k": 11, "qs": 0, "sv": 1, "hd": 3, "era": 5.79, "whip": 1.714}, {"name": "Tony Santillan", "team": "The Chicago Orphans", "ip": "10.2", "ip_dec": 10.666666666666666, "k": 9, "qs": 0, "sv": 1, "hd": 6, "era": 4.22, "whip": 1.406}]}, "Seattle Dumpers": {"batters": [{"name": "Mickey Moniak", "team": "Seattle Dumpers", "ab": 116, "r": 15, "hr": 7, "rbi": 19, "sb": 1, "avg": 0.284, "ops": 0.927}, {"name": "Aaron Judge", "team": "Seattle Dumpers", "ab": 178, "r": 35, "hr": 14, "rbi": 31, "sb": 4, "avg": 0.247, "ops": 0.916}, {"name": "Jake Bauers", "team": "Seattle Dumpers", "ab": 162, "r": 28, "hr": 8, "rbi": 33, "sb": 2, "avg": 0.272, "ops": 0.874}, {"name": "Yandy Diaz", "team": "Seattle Dumpers", "ab": 233, "r": 30, "hr": 10, "rbi": 38, "sb": 1, "avg": 0.309, "ops": 0.867}, {"name": "Max Muncy", "team": "Seattle Dumpers", "ab": 213, "r": 39, "hr": 12, "rbi": 28, "sb": 1, "avg": 0.254, "ops": 0.841}, {"name": "Jonathan Aranda", "team": "Seattle Dumpers", "ab": 224, "r": 33, "hr": 10, "rbi": 44, "sb": 0, "avg": 0.286, "ops": 0.839}, {"name": "George Springer", "team": "Seattle Dumpers", "ab": 160, "r": 20, "hr": 6, "rbi": 17, "sb": 5, "avg": 0.237, "ops": 0.733}, {"name": "Brayan Rocchio", "team": "Seattle Dumpers", "ab": 109, "r": 13, "hr": 2, "rbi": 14, "sb": 6, "avg": 0.257, "ops": 0.726}, {"name": "Brendan Donovan", "team": "Seattle Dumpers", "ab": 52, "r": 4, "hr": 1, "rbi": 4, "sb": 0, "avg": 0.231, "ops": 0.719}, {"name": "Heliot Ramos", "team": "Seattle Dumpers", "ab": 86, "r": 7, "hr": 3, "rbi": 12, "sb": 0, "avg": 0.244, "ops": 0.715}, {"name": "Josh Naylor", "team": "Seattle Dumpers", "ab": 223, "r": 24, "hr": 6, "rbi": 26, "sb": 13, "avg": 0.265, "ops": 0.703}, {"name": "Bo Bichette", "team": "Seattle Dumpers", "ab": 262, "r": 35, "hr": 8, "rbi": 36, "sb": 1, "avg": 0.26, "ops": 0.697}, {"name": "Luis Garcia Jr", "team": "Seattle Dumpers", "ab": 146, "r": 20, "hr": 7, "rbi": 29, "sb": 1, "avg": 0.24, "ops": 0.695}, {"name": "Samuel Basallo", "team": "Seattle Dumpers", "ab": 68, "r": 8, "hr": 3, "rbi": 12, "sb": 0, "avg": 0.221, "ops": 0.673}, {"name": "Cal Raleigh", "team": "Seattle Dumpers", "ab": 118, "r": 13, "hr": 7, "rbi": 14, "sb": 1, "avg": 0.178, "ops": 0.646}, {"name": "Luke Raley", "team": "Seattle Dumpers", "ab": 64, "r": 5, "hr": 4, "rbi": 8, "sb": 0, "avg": 0.172, "ops": 0.593}, {"name": "Giancarlo Stanton", "team": "Seattle Dumpers", "ab": 57, "r": 5, "hr": 2, "rbi": 8, "sb": 0, "avg": 0.175, "ops": 0.58}, {"name": "Chandler Simpson", "team": "Seattle Dumpers", "ab": 229, "r": 28, "hr": 0, "rbi": 14, "sb": 13, "avg": 0.245, "ops": 0.565}], "pitchers": [{"name": "Chase Burns", "team": "Seattle Dumpers", "ip": "69.2", "ip_dec": 69.66666666666667, "k": 79, "qs": 7, "sv": 0, "hd": 0, "era": 2.2, "whip": 1.033}, {"name": "Logan Gilbert", "team": "Seattle Dumpers", "ip": "76.0", "ip_dec": 76.0, "k": 79, "qs": 6, "sv": 0, "hd": 0, "era": 2.96, "whip": 0.974}, {"name": "Yoshinobu Yamamoto", "team": "Seattle Dumpers", "ip": "79.2", "ip_dec": 79.66666666666667, "k": 78, "qs": 9, "sv": 0, "hd": 0, "era": 2.6, "whip": 0.879}, {"name": "Max Meyer", "team": "Seattle Dumpers", "ip": "65.0", "ip_dec": 65.0, "k": 74, "qs": 5, "sv": 0, "hd": 0, "era": 2.35, "whip": 1.123}, {"name": "Davis Martin", "team": "Seattle Dumpers", "ip": "56.2", "ip_dec": 56.666666666666664, "k": 64, "qs": 6, "sv": 0, "hd": 0, "era": 3.81, "whip": 1.271}, {"name": "Trey Yesavage", "team": "Seattle Dumpers", "ip": "55.0", "ip_dec": 55.0, "k": 53, "qs": 3, "sv": 0, "hd": 0, "era": 3.76, "whip": 1.164}, {"name": "Foster Griffin", "team": "Seattle Dumpers", "ip": "51.1", "ip_dec": 51.333333333333336, "k": 52, "qs": 5, "sv": 0, "hd": 0, "era": 3.68, "whip": 1.11}, {"name": "Bryce Miller", "team": "Seattle Dumpers", "ip": "35.0", "ip_dec": 35.0, "k": 39, "qs": 2, "sv": 0, "hd": 0, "era": 1.29, "whip": 0.657}, {"name": "Nick Martinez", "team": "Seattle Dumpers", "ip": "63.0", "ip_dec": 63.0, "k": 37, "qs": 5, "sv": 0, "hd": 0, "era": 2.86, "whip": 1.302}, {"name": "Michael McGreevy", "team": "Seattle Dumpers", "ip": "50.0", "ip_dec": 50.0, "k": 32, "qs": 6, "sv": 0, "hd": 0, "era": 3.6, "whip": 1.32}, {"name": "Rico Garcia", "team": "Seattle Dumpers", "ip": "23.1", "ip_dec": 23.333333333333332, "k": 28, "qs": 0, "sv": 3, "hd": 8, "era": 2.31, "whip": 0.857}, {"name": "Aroldis Chapman", "team": "Seattle Dumpers", "ip": "17.2", "ip_dec": 17.666666666666668, "k": 26, "qs": 0, "sv": 12, "hd": 0, "era": 0.51, "whip": 1.019}, {"name": "Abner Uribe", "team": "Seattle Dumpers", "ip": "23.2", "ip_dec": 23.666666666666668, "k": 25, "qs": 0, "sv": 5, "hd": 6, "era": 3.8, "whip": 1.183}, {"name": "JoJo Romero", "team": "Seattle Dumpers", "ip": "19.1", "ip_dec": 19.333333333333332, "k": 23, "qs": 0, "sv": 0, "hd": 11, "era": 6.05, "whip": 1.81}, {"name": "Trevor McDonald", "team": "Seattle Dumpers", "ip": "24.1", "ip_dec": 24.333333333333332, "k": 23, "qs": 1, "sv": 0, "hd": 0, "era": 5.92, "whip": 1.521}, {"name": "Tyler Rogers", "team": "Seattle Dumpers", "ip": "28.1", "ip_dec": 28.333333333333332, "k": 17, "qs": 0, "sv": 2, "hd": 14, "era": 2.22, "whip": 1.235}, {"name": "Peter Lambert", "team": "Seattle Dumpers", "ip": "17.2", "ip_dec": 17.666666666666668, "k": 16, "qs": 1, "sv": 0, "hd": 0, "era": 4.08, "whip": 1.075}, {"name": "Reynaldo Lopez", "team": "Seattle Dumpers", "ip": "10.2", "ip_dec": 10.666666666666666, "k": 14, "qs": 0, "sv": 0, "hd": 0, "era": 5.91, "whip": 1.969}, {"name": "Matthew Boyd", "team": "Seattle Dumpers", "ip": "8.2", "ip_dec": 8.666666666666666, "k": 9, "qs": 0, "sv": 0, "hd": 0, "era": 7.27, "whip": 1.731}]}, "Lets Go Bucs": {"batters": [{"name": "Gabriel Moreno", "team": "Lets Go Bucs", "ab": 133, "r": 19, "hr": 6, "rbi": 23, "sb": 4, "avg": 0.286, "ops": 0.861}, {"name": "Ronald Acuna Jr", "team": "Lets Go Bucs", "ab": 159, "r": 30, "hr": 7, "rbi": 20, "sb": 13, "avg": 0.264, "ops": 0.85}, {"name": "Freddie Freeman", "team": "Lets Go Bucs", "ab": 241, "r": 38, "hr": 10, "rbi": 31, "sb": 2, "avg": 0.278, "ops": 0.844}, {"name": "Josh Jung", "team": "Lets Go Bucs", "ab": 125, "r": 16, "hr": 4, "rbi": 14, "sb": 0, "avg": 0.32, "ops": 0.834}, {"name": "JJ Bleday", "team": "Lets Go Bucs", "ab": 104, "r": 16, "hr": 7, "rbi": 16, "sb": 1, "avg": 0.24, "ops": 0.831}, {"name": "Brandon Lowe", "team": "Lets Go Bucs", "ab": 236, "r": 41, "hr": 15, "rbi": 45, "sb": 0, "avg": 0.246, "ops": 0.828}, {"name": "Ernie Clement", "team": "Lets Go Bucs", "ab": 233, "r": 32, "hr": 7, "rbi": 24, "sb": 1, "avg": 0.296, "ops": 0.785}, {"name": "Ketel Marte", "team": "Lets Go Bucs", "ab": 232, "r": 36, "hr": 10, "rbi": 40, "sb": 0, "avg": 0.267, "ops": 0.784}, {"name": "Christian Yelich", "team": "Lets Go Bucs", "ab": 123, "r": 25, "hr": 3, "rbi": 14, "sb": 2, "avg": 0.268, "ops": 0.768}, {"name": "Christian Walker", "team": "Lets Go Bucs", "ab": 247, "r": 36, "hr": 16, "rbi": 41, "sb": 0, "avg": 0.231, "ops": 0.766}, {"name": "Ceddanne Rafaela", "team": "Lets Go Bucs", "ab": 199, "r": 24, "hr": 4, "rbi": 21, "sb": 7, "avg": 0.266, "ops": 0.747}, {"name": "Daylen Lile", "team": "Lets Go Bucs", "ab": 247, "r": 34, "hr": 8, "rbi": 34, "sb": 7, "avg": 0.251, "ops": 0.739}, {"name": "Carlos Cortes", "team": "Lets Go Bucs", "ab": 72, "r": 7, "hr": 1, "rbi": 4, "sb": 1, "avg": 0.278, "ops": 0.73}, {"name": "Kyle Tucker", "team": "Lets Go Bucs", "ab": 236, "r": 36, "hr": 5, "rbi": 34, "sb": 4, "avg": 0.233, "ops": 0.708}, {"name": "Austin Riley", "team": "Lets Go Bucs", "ab": 156, "r": 17, "hr": 6, "rbi": 24, "sb": 1, "avg": 0.218, "ops": 0.665}, {"name": "Yainer Diaz", "team": "Lets Go Bucs", "ab": 63, "r": 4, "hr": 2, "rbi": 8, "sb": 0, "avg": 0.254, "ops": 0.664}, {"name": "Jose Altuve", "team": "Lets Go Bucs", "ab": 162, "r": 20, "hr": 5, "rbi": 14, "sb": 0, "avg": 0.216, "ops": 0.617}, {"name": "Corey Seager", "team": "Lets Go Bucs", "ab": 135, "r": 18, "hr": 5, "rbi": 16, "sb": 1, "avg": 0.17, "ops": 0.601}], "pitchers": [{"name": "Jacob deGrom", "team": "Lets Go Bucs", "ip": "78.0", "ip_dec": 78.0, "k": 91, "qs": 6, "sv": 0, "hd": 0, "era": 3.46, "whip": 1.013}, {"name": "Parker Messick", "team": "Lets Go Bucs", "ip": "73.1", "ip_dec": 73.33333333333333, "k": 80, "qs": 4, "sv": 0, "hd": 0, "era": 3.07, "whip": 1.159}, {"name": "Robbie Ray", "team": "Lets Go Bucs", "ip": "69.0", "ip_dec": 69.0, "k": 63, "qs": 4, "sv": 0, "hd": 0, "era": 4.17, "whip": 1.377}, {"name": "Ryan Weathers", "team": "Lets Go Bucs", "ip": "53.1", "ip_dec": 53.333333333333336, "k": 53, "qs": 3, "sv": 0, "hd": 0, "era": 4.39, "whip": 1.087}, {"name": "Seth Lugo", "team": "Lets Go Bucs", "ip": "67.2", "ip_dec": 67.66666666666667, "k": 52, "qs": 7, "sv": 0, "hd": 0, "era": 4.26, "whip": 1.419}, {"name": "Louis Varland", "team": "Lets Go Bucs", "ip": "35.1", "ip_dec": 35.333333333333336, "k": 51, "qs": 0, "sv": 15, "hd": 4, "era": 1.02, "whip": 0.906}, {"name": "Sonny Gray", "team": "Lets Go Bucs", "ip": "59.1", "ip_dec": 59.333333333333336, "k": 47, "qs": 7, "sv": 0, "hd": 0, "era": 2.88, "whip": 1.197}, {"name": "Carlos Rodon", "team": "Lets Go Bucs", "ip": "36.0", "ip_dec": 36.0, "k": 41, "qs": 3, "sv": 0, "hd": 0, "era": 3.5, "whip": 1.25}, {"name": "Justin Wrobleski", "team": "Lets Go Bucs", "ip": "55.1", "ip_dec": 55.333333333333336, "k": 41, "qs": 6, "sv": 0, "hd": 0, "era": 3.09, "whip": 1.066}, {"name": "Andres Munoz", "team": "Lets Go Bucs", "ip": "22.1", "ip_dec": 22.333333333333332, "k": 32, "qs": 0, "sv": 12, "hd": 0, "era": 4.84, "whip": 1.478}, {"name": "Merrill Kelly", "team": "Lets Go Bucs", "ip": "49.1", "ip_dec": 49.333333333333336, "k": 28, "qs": 3, "sv": 0, "hd": 0, "era": 6.75, "whip": 1.703}, {"name": "Noah Cameron", "team": "Lets Go Bucs", "ip": "26.2", "ip_dec": 26.666666666666668, "k": 23, "qs": 2, "sv": 0, "hd": 0, "era": 5.06, "whip": 1.05}, {"name": "Cade Cavalli", "team": "Lets Go Bucs", "ip": "21.0", "ip_dec": 21.0, "k": 20, "qs": 1, "sv": 0, "hd": 0, "era": 4.29, "whip": 1.286}, {"name": "Ryne Nelson", "team": "Lets Go Bucs", "ip": "38.1", "ip_dec": 38.333333333333336, "k": 19, "qs": 4, "sv": 0, "hd": 0, "era": 4.46, "whip": 1.33}, {"name": "Matt Strahm", "team": "Lets Go Bucs", "ip": "12.2", "ip_dec": 12.666666666666666, "k": 13, "qs": 0, "sv": 0, "hd": 6, "era": 3.55, "whip": 1.342}, {"name": "Andre Pallante", "team": "Lets Go Bucs", "ip": "17.0", "ip_dec": 17.0, "k": 12, "qs": 1, "sv": 0, "hd": 0, "era": 3.71, "whip": 1.059}, {"name": "Nick Pivetta", "team": "Lets Go Bucs", "ip": "8.0", "ip_dec": 8.0, "k": 12, "qs": 0, "sv": 0, "hd": 0, "era": 2.25, "whip": 0.625}, {"name": "Stephen Kolek", "team": "Lets Go Bucs", "ip": "12.1", "ip_dec": 12.333333333333334, "k": 9, "qs": 1, "sv": 0, "hd": 0, "era": 2.92, "whip": 1.054}, {"name": "Chase Dollander", "team": "Lets Go Bucs", "ip": "12.0", "ip_dec": 12.0, "k": 8, "qs": 0, "sv": 0, "hd": 0, "era": 8.25, "whip": 2.083}, {"name": "Jack Kochanowicz", "team": "Lets Go Bucs", "ip": "12.2", "ip_dec": 12.666666666666666, "k": 7, "qs": 1, "sv": 0, "hd": 0, "era": 7.82, "whip": 2.211}, {"name": "Steven Matz", "team": "Lets Go Bucs", "ip": "12.0", "ip_dec": 12.0, "k": 7, "qs": 1, "sv": 0, "hd": 0, "era": 8.25, "whip": 1.917}, {"name": "Walker Buehler", "team": "Lets Go Bucs", "ip": "5.1", "ip_dec": 5.333333333333333, "k": 7, "qs": 0, "sv": 0, "hd": 0, "era": 1.69, "whip": 1.125}, {"name": "Janson Junk", "team": "Lets Go Bucs", "ip": "6.0", "ip_dec": 6.0, "k": 6, "qs": 0, "sv": 0, "hd": 0, "era": 6.0, "whip": 1.5}, {"name": "Troy Melton", "team": "Lets Go Bucs", "ip": "5.0", "ip_dec": 5.0, "k": 5, "qs": 0, "sv": 0, "hd": 0, "era": 7.2, "whip": 1.6}, {"name": "Luis Severino", "team": "Lets Go Bucs", "ip": "5.1", "ip_dec": 5.333333333333333, "k": 4, "qs": 0, "sv": 0, "hd": 0, "era": 3.38, "whip": 1.875}]}, "Pittsburgh Pirates": {"batters": [{"name": "Bryan Reynolds", "team": "Pittsburgh Pirates", "ab": 237, "r": 41, "hr": 8, "rbi": 42, "sb": 5, "avg": 0.291, "ops": 0.886}, {"name": "Matt Olson", "team": "Pittsburgh Pirates", "ab": 255, "r": 47, "hr": 18, "rbi": 45, "sb": 2, "avg": 0.271, "ops": 0.878}, {"name": "Brooks Lee", "team": "Pittsburgh Pirates", "ab": 92, "r": 16, "hr": 6, "rbi": 15, "sb": 1, "avg": 0.272, "ops": 0.875}, {"name": "Travis Bazzana", "team": "Pittsburgh Pirates", "ab": 149, "r": 21, "hr": 7, "rbi": 23, "sb": 9, "avg": 0.282, "ops": 0.868}, {"name": "Javier Baez", "team": "Pittsburgh Pirates", "ab": 52, "r": 9, "hr": 2, "rbi": 3, "sb": 0, "avg": 0.308, "ops": 0.845}, {"name": "Alec Burleson", "team": "Pittsburgh Pirates", "ab": 255, "r": 35, "hr": 12, "rbi": 48, "sb": 1, "avg": 0.286, "ops": 0.835}, {"name": "Riley Greene", "team": "Pittsburgh Pirates", "ab": 240, "r": 31, "hr": 8, "rbi": 28, "sb": 1, "avg": 0.296, "ops": 0.833}, {"name": "Otto Lopez", "team": "Pittsburgh Pirates", "ab": 247, "r": 32, "hr": 2, "rbi": 24, "sb": 13, "avg": 0.324, "ops": 0.775}, {"name": "Fernando Tatis Jr", "team": "Pittsburgh Pirates", "ab": 254, "r": 28, "hr": 2, "rbi": 23, "sb": 16, "avg": 0.291, "ops": 0.713}, {"name": "Mookie Betts", "team": "Pittsburgh Pirates", "ab": 129, "r": 19, "hr": 6, "rbi": 12, "sb": 1, "avg": 0.233, "ops": 0.704}, {"name": "Will Smith", "team": "Pittsburgh Pirates", "ab": 143, "r": 19, "hr": 4, "rbi": 18, "sb": 0, "avg": 0.245, "ops": 0.703}, {"name": "Willy Adames", "team": "Pittsburgh Pirates", "ab": 202, "r": 26, "hr": 8, "rbi": 17, "sb": 1, "avg": 0.208, "ops": 0.639}, {"name": "Manny Machado", "team": "Pittsburgh Pirates", "ab": 243, "r": 29, "hr": 12, "rbi": 38, "sb": 1, "avg": 0.173, "ops": 0.597}, {"name": "Josh Bell", "team": "Pittsburgh Pirates", "ab": 74, "r": 5, "hr": 0, "rbi": 5, "sb": 0, "avg": 0.162, "ops": 0.381}], "pitchers": [{"name": "Taj Bradley", "team": "Pittsburgh Pirates", "ip": "60.0", "ip_dec": 60.0, "k": 62, "qs": 3, "sv": 0, "hd": 0, "era": 4.95, "whip": 1.383}, {"name": "Michael Soroka", "team": "Pittsburgh Pirates", "ip": "65.2", "ip_dec": 65.66666666666667, "k": 60, "qs": 6, "sv": 0, "hd": 0, "era": 3.56, "whip": 1.036}, {"name": "Mitch Keller", "team": "Pittsburgh Pirates", "ip": "70.1", "ip_dec": 70.33333333333333, "k": 58, "qs": 5, "sv": 0, "hd": 0, "era": 5.89, "whip": 1.379}, {"name": "Spencer Arrighetti", "team": "Pittsburgh Pirates", "ip": "63.0", "ip_dec": 63.0, "k": 58, "qs": 4, "sv": 0, "hd": 0, "era": 3.29, "whip": 1.206}, {"name": "Tarik Skubal", "team": "Pittsburgh Pirates", "ip": "40.2", "ip_dec": 40.666666666666664, "k": 48, "qs": 3, "sv": 0, "hd": 0, "era": 3.76, "whip": 1.131}, {"name": "Joey Cantillo", "team": "Pittsburgh Pirates", "ip": "50.2", "ip_dec": 50.666666666666664, "k": 44, "qs": 2, "sv": 0, "hd": 0, "era": 4.09, "whip": 1.401}, {"name": "Jeffrey Springs", "team": "Pittsburgh Pirates", "ip": "48.0", "ip_dec": 48.0, "k": 42, "qs": 2, "sv": 0, "hd": 0, "era": 5.06, "whip": 1.354}, {"name": "Jack Leiter", "team": "Pittsburgh Pirates", "ip": "34.0", "ip_dec": 34.0, "k": 37, "qs": 0, "sv": 0, "hd": 0, "era": 6.62, "whip": 1.618}, {"name": "Sean Burke", "team": "Pittsburgh Pirates", "ip": "29.2", "ip_dec": 29.666666666666668, "k": 36, "qs": 0, "sv": 0, "hd": 0, "era": 5.76, "whip": 1.584}, {"name": "David Bednar", "team": "Pittsburgh Pirates", "ip": "26.1", "ip_dec": 26.333333333333332, "k": 34, "qs": 0, "sv": 10, "hd": 0, "era": 3.42, "whip": 1.177}, {"name": "Tyler Glasnow", "team": "Pittsburgh Pirates", "ip": "27.2", "ip_dec": 27.666666666666668, "k": 34, "qs": 2, "sv": 0, "hd": 0, "era": 2.6, "whip": 0.795}, {"name": "Jameson Taillon", "team": "Pittsburgh Pirates", "ip": "39.0", "ip_dec": 39.0, "k": 33, "qs": 2, "sv": 0, "hd": 0, "era": 5.77, "whip": 1.308}, {"name": "Trevor Megill", "team": "Pittsburgh Pirates", "ip": "23.0", "ip_dec": 23.0, "k": 32, "qs": 0, "sv": 6, "hd": 7, "era": 2.74, "whip": 0.913}, {"name": "Tanner Scott", "team": "Pittsburgh Pirates", "ip": "24.1", "ip_dec": 24.333333333333332, "k": 30, "qs": 0, "sv": 9, "hd": 2, "era": 2.59, "whip": 0.74}, {"name": "Jhoan Duran", "team": "Pittsburgh Pirates", "ip": "19.0", "ip_dec": 19.0, "k": 28, "qs": 0, "sv": 15, "hd": 0, "era": 0.47, "whip": 0.684}, {"name": "Riley O'Brien", "team": "Pittsburgh Pirates", "ip": "26.0", "ip_dec": 26.0, "k": 27, "qs": 0, "sv": 16, "hd": 0, "era": 4.5, "whip": 1.308}, {"name": "Jack Flaherty", "team": "Pittsburgh Pirates", "ip": "20.1", "ip_dec": 20.333333333333332, "k": 25, "qs": 0, "sv": 0, "hd": 0, "era": 5.31, "whip": 1.23}, {"name": "Bailey Ober", "team": "Pittsburgh Pirates", "ip": "40.2", "ip_dec": 40.666666666666664, "k": 22, "qs": 3, "sv": 0, "hd": 0, "era": 4.87, "whip": 1.205}, {"name": "Gerrit Cole", "team": "Pittsburgh Pirates", "ip": "16.2", "ip_dec": 16.666666666666668, "k": 20, "qs": 2, "sv": 0, "hd": 0, "era": 2.16, "whip": 0.96}, {"name": "Matthew Liberatore", "team": "Pittsburgh Pirates", "ip": "26.0", "ip_dec": 26.0, "k": 19, "qs": 2, "sv": 0, "hd": 0, "era": 4.5, "whip": 1.385}, {"name": "Chad Patrick", "team": "Pittsburgh Pirates", "ip": "12.1", "ip_dec": 12.333333333333334, "k": 15, "qs": 0, "sv": 0, "hd": 1, "era": 4.38, "whip": 1.541}, {"name": "Zebby Matthews", "team": "Pittsburgh Pirates", "ip": "17.1", "ip_dec": 17.333333333333332, "k": 15, "qs": 2, "sv": 0, "hd": 0, "era": 6.23, "whip": 1.327}, {"name": "Griffin Jax", "team": "Pittsburgh Pirates", "ip": "8.2", "ip_dec": 8.666666666666666, "k": 11, "qs": 0, "sv": 0, "hd": 2, "era": 1.04, "whip": 1.154}, {"name": "JR Ritchie", "team": "Pittsburgh Pirates", "ip": "14.1", "ip_dec": 14.333333333333334, "k": 10, "qs": 0, "sv": 0, "hd": 0, "era": 6.28, "whip": 1.744}, {"name": "Zack Littell", "team": "Pittsburgh Pirates", "ip": "12.2", "ip_dec": 12.666666666666666, "k": 9, "qs": 1, "sv": 0, "hd": 0, "era": 5.68, "whip": 1.184}, {"name": "Dennis Santana", "team": "Pittsburgh Pirates", "ip": "13.1", "ip_dec": 13.333333333333334, "k": 8, "qs": 0, "sv": 2, "hd": 1, "era": 5.4, "whip": 1.575}, {"name": "Lucas Giolito", "team": "Pittsburgh Pirates", "ip": "10.0", "ip_dec": 10.0, "k": 5, "qs": 0, "sv": 0, "hd": 0, "era": 5.4, "whip": 1.4}, {"name": "Taylor Clarke", "team": "Pittsburgh Pirates", "ip": "5.1", "ip_dec": 5.333333333333333, "k": 5, "qs": 0, "sv": 0, "hd": 0, "era": 1.69, "whip": 0.75}, {"name": "Tomoyuki Sugano", "team": "Pittsburgh Pirates", "ip": "5.1", "ip_dec": 5.333333333333333, "k": 1, "qs": 0, "sv": 0, "hd": 0, "era": 6.75, "whip": 0.938}]}, "Cronen-Zone": {"batters": [{"name": "Jackson Chourio", "team": "Cronen-Zone", "ab": 153, "r": 28, "hr": 10, "rbi": 26, "sb": 5, "avg": 0.288, "ops": 0.888}, {"name": "Tyler Soderstrom", "team": "Cronen-Zone", "ab": 237, "r": 34, "hr": 13, "rbi": 34, "sb": 1, "avg": 0.245, "ops": 0.841}, {"name": "Jose Ramirez", "team": "Cronen-Zone", "ab": 229, "r": 40, "hr": 9, "rbi": 28, "sb": 22, "avg": 0.253, "ops": 0.798}, {"name": "Colson Montgomery", "team": "Cronen-Zone", "ab": 186, "r": 26, "hr": 13, "rbi": 28, "sb": 0, "avg": 0.226, "ops": 0.796}, {"name": "Troy Johnston", "team": "Cronen-Zone", "ab": 202, "r": 25, "hr": 1, "rbi": 29, "sb": 4, "avg": 0.307, "ops": 0.792}, {"name": "TJ Rumfield", "team": "Cronen-Zone", "ab": 222, "r": 26, "hr": 9, "rbi": 32, "sb": 0, "avg": 0.261, "ops": 0.788}, {"name": "Pete Alonso", "team": "Cronen-Zone", "ab": 215, "r": 33, "hr": 11, "rbi": 36, "sb": 1, "avg": 0.242, "ops": 0.763}, {"name": "Zach Neto", "team": "Cronen-Zone", "ab": 244, "r": 41, "hr": 12, "rbi": 29, "sb": 10, "avg": 0.221, "ops": 0.745}, {"name": "Alex Bregman", "team": "Cronen-Zone", "ab": 74, "r": 9, "hr": 1, "rbi": 6, "sb": 0, "avg": 0.257, "ops": 0.712}, {"name": "Taylor Ward", "team": "Cronen-Zone", "ab": 251, "r": 43, "hr": 3, "rbi": 15, "sb": 2, "avg": 0.239, "ops": 0.711}, {"name": "Gunnar Henderson", "team": "Cronen-Zone", "ab": 201, "r": 29, "hr": 10, "rbi": 23, "sb": 4, "avg": 0.209, "ops": 0.691}, {"name": "Xander Bogaerts", "team": "Cronen-Zone", "ab": 120, "r": 16, "hr": 5, "rbi": 16, "sb": 7, "avg": 0.242, "ops": 0.686}, {"name": "Agustin Ramirez", "team": "Cronen-Zone", "ab": 86, "r": 10, "hr": 2, "rbi": 13, "sb": 2, "avg": 0.233, "ops": 0.663}, {"name": "Jarren Duran", "team": "Cronen-Zone", "ab": 250, "r": 32, "hr": 12, "rbi": 33, "sb": 9, "avg": 0.208, "ops": 0.654}, {"name": "Marcus Semien", "team": "Cronen-Zone", "ab": 240, "r": 27, "hr": 8, "rbi": 23, "sb": 6, "avg": 0.217, "ops": 0.62}], "pitchers": [{"name": "Will Warren", "team": "Cronen-Zone", "ip": "66.0", "ip_dec": 66.0, "k": 75, "qs": 5, "sv": 0, "hd": 0, "era": 3.68, "whip": 1.409}, {"name": "Shota Imanaga", "team": "Cronen-Zone", "ip": "76.2", "ip_dec": 76.66666666666667, "k": 73, "qs": 6, "sv": 0, "hd": 0, "era": 4.23, "whip": 1.043}, {"name": "Nathan Eovaldi", "team": "Cronen-Zone", "ip": "78.2", "ip_dec": 78.66666666666667, "k": 71, "qs": 7, "sv": 0, "hd": 0, "era": 3.43, "whip": 1.055}, {"name": "Ranger Suarez", "team": "Cronen-Zone", "ip": "68.1", "ip_dec": 68.33333333333333, "k": 70, "qs": 5, "sv": 0, "hd": 0, "era": 2.24, "whip": 1.024}, {"name": "Shane Baz", "team": "Cronen-Zone", "ip": "78.0", "ip_dec": 78.0, "k": 67, "qs": 5, "sv": 0, "hd": 0, "era": 4.04, "whip": 1.372}, {"name": "Jeff Hoffman", "team": "Cronen-Zone", "ip": "26.1", "ip_dec": 26.333333333333332, "k": 43, "qs": 0, "sv": 4, "hd": 8, "era": 6.15, "whip": 1.709}, {"name": "Aaron Ashby", "team": "Cronen-Zone", "ip": "29.0", "ip_dec": 29.0, "k": 40, "qs": 0, "sv": 0, "hd": 3, "era": 3.41, "whip": 1.483}, {"name": "Spencer Strider", "team": "Cronen-Zone", "ip": "35.2", "ip_dec": 35.666666666666664, "k": 40, "qs": 2, "sv": 0, "hd": 0, "era": 5.05, "whip": 1.234}, {"name": "Alex Vesia", "team": "Cronen-Zone", "ip": "16.2", "ip_dec": 16.666666666666668, "k": 33, "qs": 0, "sv": 3, "hd": 10, "era": 3.78, "whip": 1.44}, {"name": "Jeremiah Estrada", "team": "Cronen-Zone", "ip": "16.0", "ip_dec": 16.0, "k": 16, "qs": 0, "sv": 1, "hd": 4, "era": 2.25, "whip": 1.125}, {"name": "Ryan Walker", "team": "Cronen-Zone", "ip": "16.0", "ip_dec": 16.0, "k": 13, "qs": 0, "sv": 2, "hd": 3, "era": 5.06, "whip": 1.688}]}, "All Betts Are Off": {"batters": [{"name": "Michael Harris", "team": "All Betts Are Off", "ab": 193, "r": 31, "hr": 12, "rbi": 34, "sb": 2, "avg": 0.326, "ops": 0.921}, {"name": "Randy Arozarena", "team": "All Betts Are Off", "ab": 227, "r": 38, "hr": 7, "rbi": 30, "sb": 17, "avg": 0.291, "ops": 0.817}, {"name": "Ivan Herrera", "team": "All Betts Are Off", "ab": 69, "r": 19, "hr": 3, "rbi": 6, "sb": 3, "avg": 0.246, "ops": 0.811}, {"name": "Rafael Devers", "team": "All Betts Are Off", "ab": 257, "r": 33, "hr": 10, "rbi": 34, "sb": 0, "avg": 0.245, "ops": 0.76}, {"name": "Carson Benge", "team": "All Betts Are Off", "ab": 232, "r": 37, "hr": 7, "rbi": 25, "sb": 7, "avg": 0.28, "ops": 0.757}, {"name": "Francisco Lindor", "team": "All Betts Are Off", "ab": 56, "r": 7, "hr": 2, "rbi": 5, "sb": 1, "avg": 0.286, "ops": 0.727}, {"name": "William Contreras", "team": "All Betts Are Off", "ab": 243, "r": 35, "hr": 5, "rbi": 36, "sb": 1, "avg": 0.288, "ops": 0.725}, {"name": "Matt Chapman", "team": "All Betts Are Off", "ab": 240, "r": 30, "hr": 6, "rbi": 37, "sb": 0, "avg": 0.246, "ops": 0.72}, {"name": "Maikel Garcia", "team": "All Betts Are Off", "ab": 226, "r": 27, "hr": 2, "rbi": 23, "sb": 4, "avg": 0.257, "ops": 0.673}, {"name": "Mauricio Dubon", "team": "All Betts Are Off", "ab": 223, "r": 22, "hr": 5, "rbi": 35, "sb": 1, "avg": 0.238, "ops": 0.665}, {"name": "Dansby Swanson", "team": "All Betts Are Off", "ab": 211, "r": 40, "hr": 7, "rbi": 26, "sb": 9, "avg": 0.19, "ops": 0.631}, {"name": "Nico Hoerner", "team": "All Betts Are Off", "ab": 273, "r": 22, "hr": 4, "rbi": 32, "sb": 8, "avg": 0.231, "ops": 0.613}, {"name": "Sal Frelick", "team": "All Betts Are Off", "ab": 95, "r": 15, "hr": 2, "rbi": 10, "sb": 1, "avg": 0.221, "ops": 0.597}, {"name": "Trea Turner", "team": "All Betts Are Off", "ab": 263, "r": 38, "hr": 7, "rbi": 20, "sb": 14, "avg": 0.217, "ops": 0.594}, {"name": "Adolis Garcia", "team": "All Betts Are Off", "ab": 105, "r": 8, "hr": 3, "rbi": 9, "sb": 2, "avg": 0.143, "ops": 0.496}], "pitchers": [{"name": "Paul Skenes", "team": "All Betts Are Off", "ip": "82.1", "ip_dec": 82.33333333333333, "k": 101, "qs": 8, "sv": 0, "hd": 0, "era": 2.4, "whip": 0.862}, {"name": "Michael King", "team": "All Betts Are Off", "ip": "74.1", "ip_dec": 74.33333333333333, "k": 62, "qs": 6, "sv": 0, "hd": 0, "era": 3.63, "whip": 1.184}, {"name": "Aaron Nola", "team": "All Betts Are Off", "ip": "62.0", "ip_dec": 62.0, "k": 61, "qs": 3, "sv": 0, "hd": 0, "era": 6.39, "whip": 1.597}, {"name": "Framber Valdez", "team": "All Betts Are Off", "ip": "71.2", "ip_dec": 71.66666666666667, "k": 57, "qs": 6, "sv": 0, "hd": 0, "era": 4.65, "whip": 1.395}, {"name": "Trevor Rogers", "team": "All Betts Are Off", "ip": "57.2", "ip_dec": 57.666666666666664, "k": 46, "qs": 3, "sv": 0, "hd": 0, "era": 6.4, "whip": 1.474}, {"name": "Aaron Civale", "team": "All Betts Are Off", "ip": "38.1", "ip_dec": 38.333333333333336, "k": 25, "qs": 1, "sv": 0, "hd": 0, "era": 5.63, "whip": 1.722}, {"name": "Jason Adam", "team": "All Betts Are Off", "ip": "25.2", "ip_dec": 25.666666666666668, "k": 20, "qs": 0, "sv": 0, "hd": 14, "era": 2.81, "whip": 1.286}, {"name": "Emilio Pagan", "team": "All Betts Are Off", "ip": "8.2", "ip_dec": 8.666666666666666, "k": 5, "qs": 0, "sv": 3, "hd": 0, "era": 5.19, "whip": 1.269}]}}};
+
+document.getElementById('snap-date').textContent = 'Stats as of ' + DATA.snap_date;
+
+// ── Tab navigation ──────────────────────────────────────────────────────────
+function showTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+  if (name === 'teams' && document.getElementById('team-content').innerHTML === '') renderTeam();
+}
+
+// ── Helpers ─────────────────────────────────────────────────────────────────
+function medal(i) {
+  if (i===0) return '<span class="gold">🥇</span>';
+  if (i===1) return '<span class="silver">🥈</span>';
+  if (i===2) return '<span class="bronze">🥉</span>';
+  return `<span style="color:var(--muted)">${i+1}</span>`;
+}
+
+function diffClass(v) {
+  if (v > 0.01) return 'diff-pos';
+  if (v < -0.01) return 'diff-neg';
+  return 'diff-neu';
+}
+
+function pct(v) { return v.toFixed(3); }
+function era(v) { return v.toFixed(2); }
+function whip(v) { return v.toFixed(3); }
+function avg(v) { return v.toFixed(3); }
+
+// ── Standings (sorted by actual PCT) ─────────────────────────────────────────
+(function() {
+  const sorted = [...DATA.standings].sort((a,b) => b.act_pct - a.act_pct);
+  const leader = sorted[0];
+  const tbody = document.getElementById('standings-body');
+  sorted.forEach((t, i) => {
+    const gb = i === 0 ? '—' : (((leader.act_w - t.act_w) + (t.act_l - leader.act_l)) / 2).toFixed(1);
+    tbody.innerHTML += `<tr>
+      <td class="rank">${medal(i)}</td>
+      <td class="team-name">${t.team}</td>
+      <td class="owner-name">${t.owner}</td>
+      <td><b>${t.act_w}</b></td>
+      <td>${t.act_l}</td>
+      <td>${t.act_t}</td>
+      <td><b>${pct(t.act_pct)}</b></td>
+      <td style="color:var(--muted)">${gb}</td>
+    </tr>`;
+  });
+})();
+
+// ── Season Stats ─────────────────────────────────────────────────────────────
+(function() {
+  // sort standings by R for bat table initially
+  const sorted = [...DATA.standings];
+  const bbody = document.getElementById('bat-stats-body');
+  sorted.sort((a,b)=>b.r-a.r).forEach((t,i)=>{
+    bbody.innerHTML += `<tr>
+      <td class="rank">${i+1}</td>
+      <td class="team-name">${t.team}</td>
+      <td>${t.r}</td><td>${t.hr}</td><td>${t.rbi}</td><td>${t.sb}</td>
+      <td>${avg(t.avg)}</td><td><b>${t.ops.toFixed(3)}</b></td>
+    </tr>`;
+  });
+  const pbody = document.getElementById('pit-stats-body');
+  sorted.sort((a,b)=>b.k-a.k).forEach((t,i)=>{
+    pbody.innerHTML += `<tr>
+      <td class="rank">${i+1}</td>
+      <td class="team-name">${t.team}</td>
+      <td>${t.k}</td><td>${t.qs}</td><td>${t.sv}</td><td>${t.hd}</td>
+      <td>${era(t.era)}</td><td>${whip(t.whip)}</td>
+    </tr>`;
+  });
+})();
+
+// ── Expected Record ──────────────────────────────────────────────────────────
+(function() {
+  const tbody = document.getElementById('exp-body');
+  DATA.standings.forEach((t, i) => {
+    const dc = diffClass(t.diff);
+    const sign = t.diff > 0 ? '+' : '';
+    tbody.innerHTML += `<tr>
+      <td class="rank">${medal(i)}</td>
+      <td class="team-name">${t.team}</td>
+      <td class="owner-name">${t.owner}</td>
+      <td>${t.exp_w}</td><td>${t.exp_l}</td><td>${pct(t.exp_pct)}</td>
+      <td><b>${t.act_w}</b></td><td>${t.act_l}</td><td>${t.act_t}</td>
+      <td><b>${pct(t.act_pct)}</b></td>
+      <td class="${dc}">${sign}${t.diff.toFixed(3)}</td>
+    </tr>`;
+  });
+})();
+
+// ── Top Players ──────────────────────────────────────────────────────────────
+(function() {
+  const hbody = document.getElementById('hitters-body');
+  DATA.top_batters.forEach((p, i) => {
+    hbody.innerHTML += `<tr>
+      <td class="rank">${medal(i)}</td>
+      <td><b>${p.name}</b></td>
+      <td style="color:var(--muted);font-size:0.82rem">${p.team}</td>
+      <td>${p.ab}</td><td>${p.r}</td><td>${p.hr}</td><td>${p.rbi}</td><td>${p.sb}</td>
+      <td>${avg(p.avg)}</td><td><b>${p.ops.toFixed(3)}</b></td>
+      <td><span class="score-badge">${p.score}</span></td>
+    </tr>`;
+  });
+  const pbody = document.getElementById('pitchers-body');
+  DATA.top_pitchers.forEach((p, i) => {
+    pbody.innerHTML += `<tr>
+      <td class="rank">${medal(i)}</td>
+      <td><b>${p.name}</b></td>
+      <td style="color:var(--muted);font-size:0.82rem">${p.team}</td>
+      <td>${p.ip}</td><td>${p.k}</td><td>${p.qs}</td><td>${p.sv}</td><td>${p.hd}</td>
+      <td>${era(p.era)}</td><td>${whip(p.whip)}</td>
+      <td><span class="score-badge">${p.score}</span></td>
+    </tr>`;
+  });
+})();
+
+// ── Team selector ────────────────────────────────────────────────────────────
+(function() {
+  const sel = document.getElementById('team-select');
+  DATA.standings.forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t.team; opt.textContent = `${t.team} — ${t.owner}`;
+    sel.appendChild(opt);
+  });
+})();
+
+function renderTeam() {
+  const team = document.getElementById('team-select').value;
+  const t = DATA.standings.find(s => s.team === team);
+  const players = DATA.teams[team] || {batters:[], pitchers:[]};
+  const expRank = DATA.standings.findIndex(s => s.team === team) + 1;
+  const actRank = [...DATA.standings].sort((a,b)=>b.act_pct-a.act_pct).findIndex(s=>s.team===team)+1;
+
+  const statCols = [
+    {l:'R',v:t.r},{l:'HR',v:t.hr},{l:'RBI',v:t.rbi},{l:'SB',v:t.sb},
+    {l:'AVG',v:avg(t.avg)},{l:'OPS',v:t.ops.toFixed(3)},
+    {l:'K',v:t.k},{l:'QS',v:t.qs},{l:'SV',v:t.sv},{l:'HD',v:t.hd},
+    {l:'ERA',v:era(t.era)},{l:'WHIP',v:whip(t.whip)}
+  ];
+
+  let html = `
+    <div class="cards" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr))">
+      <div class="card"><div class="label">Owner</div><div class="value" style="font-size:1.2rem">${t.owner}</div></div>
+      <div class="card"><div class="label">Record</div><div class="value" style="font-size:1.3rem">${t.act_w}-${t.act_l}-${t.act_t}</div><div class="sub">${pct(t.act_pct)} PCT</div></div>
+      <div class="card"><div class="label">Expected</div><div class="value" style="font-size:1.3rem">${t.exp_w}-${t.exp_l}</div><div class="sub">${pct(t.exp_pct)} PCT</div></div>
+      <div class="card"><div class="label">Exp Rank</div><div class="value">#${expRank}</div></div>
+      <div class="card"><div class="label">Act Rank</div><div class="value">#${actRank}</div></div>
+      <div class="card"><div class="label">Luck (Diff)</div><div class="value ${diffClass(t.diff)}" style="font-size:1.3rem">${t.diff>0?'+':''}${t.diff.toFixed(3)}</div></div>
+    </div>
+    <div class="section-title" style="margin-top:8px">Season Stats</div>
+    <div class="stat-grid">
+      ${statCols.map(s=>`<div class="stat-pill"><div class="s-label">${s.l}</div><div class="s-val">${s.v}</div></div>`).join('')}
+    </div>
+    <div class="section-title">Batters</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Player</th><th>AB</th><th>R</th><th>HR</th><th>RBI</th><th>SB</th><th>AVG</th><th>OPS</th></tr></thead>
+        <tbody>
+          ${players.batters.map((p,i)=>`<tr>
+            <td class="rank">${i+1}</td>
+            <td><b>${p.name}</b></td>
+            <td>${p.ab}</td><td>${p.r}</td><td>${p.hr}</td><td>${p.rbi}</td><td>${p.sb}</td>
+            <td>${avg(p.avg)}</td><td>${p.ops.toFixed(3)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div class="section-title">Pitchers</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Player</th><th>IP</th><th>K</th><th>QS</th><th>SV</th><th>HD</th><th>ERA</th><th>WHIP</th></tr></thead>
+        <tbody>
+          ${players.pitchers.map((p,i)=>`<tr>
+            <td class="rank">${i+1}</td>
+            <td><b>${p.name}</b></td>
+            <td>${p.ip}</td><td>${p.k}</td><td>${p.qs}</td><td>${p.sv}</td><td>${p.hd}</td>
+            <td>${era(p.era)}</td><td>${whip(p.whip)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+  document.getElementById('team-content').innerHTML = html;
+}
+
+// ── Season Write-Up ──────────────────────────────────────────────────────────
+(function() {
+  const writeups = [
+    {
+      team: 'The Big Gamblino',
+      owner: 'Ted Zhang',
+      tag: 'The Runaway Leader',
+      diff_class: 'diff-neg',
+      body: `There's dominant, and then there's this. Ted leads every meaningful offensive category — 162 HR, 490 R, 466 RBI, .826 OPS — and his expected win% of .768 is the highest in the league by a country mile. The only wrinkle? He's actually underperforming his expected record by 12 points (.650 actual vs .768 expected), the biggest negative gap in the league. That's not a talent problem — that's schedule variance. He's been the best team in the league all year and has somewhat unlucky draws to show for it. His one real weakness is SB (47, near the bottom of the league) — but when you're putting up those power numbers, you don't care.`
+    },
+    {
+      team: "Pooh's On First",
+      owner: 'Kevin Glancy',
+      tag: 'Legitimately Second Best, Robbed by Luck',
+      diff_class: 'diff-neg',
+      body: `By the z-score model, Pooh's is the clear #2 team in the league. The calling card is stolen bases — 106 on the season, more than the next closest team (Pittsburgh Piglets at 86) by 20. The pitching staff leads the league in K (900) and QS (58), which is genuinely elite. The problem: actual record is .558, seven points below expected (.629). If you played every team every week you'd be comfortably second. Instead you're sitting 5th at 11 games back. The schedule has not been kind.`
+    },
+    {
+      team: 'Phoenix Coyotes',
+      owner: 'Josh Oremland',
+      tag: 'Pitching Machines',
+      diff_class: 'diff-neu',
+      body: `Phoenix sits 2nd/3rd in actual standings and 3rd in expected, so the actual record (.596) closely reflects their true quality — only a 2.5 point gap. They're the most internally consistent team in the league. The identity is clear: league-leading strikeouts (938), the most quality starts (63), and the second-best ERA (3.657). Their offense is middle of the pack everywhere, but you don't need to hit if your pitchers are that good. The only glaring hole is holds (13 — second worst) suggesting a closer-heavy bullpen with no setup men.`
+    },
+    {
+      team: 'Pittsburgh Piglets',
+      owner: 'Julien Piet',
+      tag: 'Balanced and Overachieving Slightly',
+      diff_class: 'diff-pos',
+      body: `Fourth in expected, fourth in actual — the most accurately-placed team in the standings. The Piglets don't dominate any single category but have no catastrophic weaknesses either. They lead the league in SB (86), have a strong ERA (3.524, third best), and post solid counting stats across the board. A +0.030 actual vs expected gap suggests very minor schedule luck in their favor. A quiet, competent, unsexy team.`
+    },
+    {
+      team: 'Seattle Dumpers',
+      owner: 'Devesh Rathee',
+      tag: 'The Schedule Darlings',
+      diff_class: 'diff-pos',
+      body: `Here's the most interesting story in the standings. Seattle is tied for 2nd in actual record (.596, 68-45-7) but only 6th in expected (.526). That's a +0.069 gap — second biggest overperformance in the league. The stats tell you why: dead last in R (380), near the bottom in HR (116), and weak OPS (.758). What they do have is the league's best ERA (3.340), best WHIP (1.168), and the most holds (37). They win with elite pitching and hope the schedule keeps cooperating. The expected model says they're a .526 team living at .596. Regression may be coming.`
+    },
+    {
+      team: 'The Chicago Orphans',
+      owner: 'Patrick Booth',
+      tag: 'The Unluckiest Middle-of-the-Pack Team',
+      diff_class: 'diff-neg',
+      body: `Fifth in expected (.554), sixth in actual (.500) — a 5.4 point gap that puts them right on the playoff bubble when they arguably shouldn't be. The Orphans lead the league in R (473) and RBI (452), which is legitimately impressive, but their pitching undercuts them — ERA of 4.109 and only 22 saves. They're a team that can beat you with the bat but gives runs back on the mound. The actual record of .500 is slightly harsh given what the model sees.`
+    },
+    {
+      team: 'Lets Go Bucs',
+      owner: 'Sherri Glancy',
+      tag: 'The Most Screwed by Schedule',
+      diff_class: 'diff-neg',
+      body: `The numbers don't lie: Lets Go Bucs has a .526 expected win% — tied with Seattle — but sits at .438 actual, 8th place, 25.5 games back. That's an 8.9-point gap, the second-biggest negative spread in the league. They have legitimate offensive numbers (458 R, 440 RBI, 125 HR), solid pitching with 58 QS, and 32 saves. This is a real team that has had the misfortune of repeatedly drawing the wrong opponent on the wrong week. They deserve to be in a playoff race. They're not.`
+    },
+    {
+      team: 'Pittsburgh Pirates',
+      owner: 'David Glancy',
+      tag: 'The Save Machine',
+      diff_class: 'diff-pos',
+      body: `58 saves. That's not a typo. The Pirates lead the league in saves by 7 over the next closest team and have built their entire identity around closing games. The model rates them 8th (.382 expected) which reflects how one-dimensional the strategy is — dead last in QS (35), weak HR and RBI, poor OPS. But that closer-heavy approach is good enough to sit 7th in actual standings at .487 — a full 10.5 points above expected. The lesson: in H2H categories, dominating one stat can carry you further than the model thinks if that stat is saves.`
+    },
+    {
+      team: 'Cronen-Zone',
+      owner: 'Andrew Stephens',
+      tag: 'Pitching Desert',
+      diff_class: 'diff-pos',
+      body: `The model has Cronen-Zone at .294 expected, and the actual record (.354) actually gives them some credit the numbers don't support — a positive +0.060 gap. The story is brutal pitching: last in K (523), last in QS (30), last in SV (10). Those three categories are almost automatic losses every week against most opponents. The offense is fine — 426 R, 120 HR — but you can't win 6 of 12 categories when you're conceding three pitching stats before the game starts.`
+    },
+    {
+      team: 'All Betts Are Off',
+      owner: 'Andrew Powell',
+      tag: 'A Season to Forget',
+      diff_class: 'diff-pos',
+      body: `Last in expected (.137), last in actual (.229). The actual record is higher than expected — a +0.092 gap — which really just means they occasionally stumble into a win against a bad matchup. The stats are historically bad in some areas: 4 saves all season (the league next-lowest is 10), 366 K (200+ fewer than average), and only 25 QS. The offense isn't the problem — .250 AVG and 397 R are league-average — but the pitching staff has been a total wreck. At 50.5 games back with the season winding down, this one is over.`
+    }
+  ];
+
+  const container = document.getElementById('writeup-content');
+  writeups.forEach(w => {
+    const t = DATA.standings.find(s => s.team === w.team) || {};
+    const expRank = DATA.standings.findIndex(s => s.team === w.team) + 1;
+    const actRank = [...DATA.standings].sort((a,b)=>b.act_pct-a.act_pct).findIndex(s=>s.team===w.team)+1;
+    container.innerHTML += `
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px 28px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px">
+          <div>
+            <div style="font-size:1.1rem;font-weight:700;color:var(--text)">${w.team}</div>
+            <div style="font-size:0.82rem;color:var(--muted);margin-top:2px">${w.owner}</div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <span style="background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:0.78rem;color:var(--muted)">Act #${actRank} &nbsp;${t.act_w}-${t.act_l}-${t.act_t} &nbsp;(${pct(t.act_pct)})</span>
+            <span style="background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:0.78rem;color:var(--muted)">Exp #${expRank} &nbsp;(${pct(t.exp_pct)})</span>
+            <span style="background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:0.78rem" class="${w.diff_class}">Diff ${t.diff > 0 ? '+' : ''}${t.diff ? t.diff.toFixed(3) : ''}</span>
+          </div>
+        </div>
+        <div style="font-size:0.88rem;color:var(--accent);font-weight:600;margin-bottom:10px">${w.tag}</div>
+        <p style="color:var(--text);line-height:1.75;font-size:0.9rem">${w.body}</p>
+      </div>`;
+  });
+})();
+
+// ── Sortable tables ──────────────────────────────────────────────────────────
+const sortState = {};
+function sortTable(tableId, colIdx) {
+  const table = document.getElementById(tableId);
+  const tbody = table.querySelector('tbody');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  const key = tableId + '_' + colIdx;
+  const asc = sortState[key] !== true;
+  sortState[key] = asc;
+
+  // Update header indicators
+  table.querySelectorAll('th').forEach((th, i) => {
+    th.classList.remove('sorted-asc','sorted-desc');
+    if (i === colIdx) th.classList.add(asc ? 'sorted-asc' : 'sorted-desc');
+  });
+
+  rows.sort((a, b) => {
+    const av = a.cells[colIdx]?.textContent.trim().replace(/[+🥇🥈🥉]/g,'').trim();
+    const bv = b.cells[colIdx]?.textContent.trim().replace(/[+🥇🥈🥉]/g,'').trim();
+    const an = parseFloat(av); const bn = parseFloat(bv);
+    if (!isNaN(an) && !isNaN(bn)) return asc ? an - bn : bn - an;
+    return asc ? av.localeCompare(bv) : bv.localeCompare(av);
+  });
+  rows.forEach(r => tbody.appendChild(r));
+}
+</script>
+</body>
+</html>
