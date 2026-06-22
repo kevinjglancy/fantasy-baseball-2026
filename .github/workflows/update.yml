@@ -3,8 +3,8 @@ name: Update Fantasy Baseball Dashboard
 on:
   schedule:
     - cron: '0 11 * * *'    # Daily 6 AM ET (11 AM UTC) — collect player stats
-    - cron: '0 14 * * 1'   # Monday 10 AM ET (2 PM UTC) — collect previous week matchup stats
-  workflow_dispatch:         # Manual trigger from GitHub UI anytime
+    - cron: '0 14 * * 1'    # Monday 10 AM ET (2 PM UTC) — collect previous week matchup stats
+  workflow_dispatch:          # Manual trigger from GitHub UI anytime
 
 jobs:
   update:
@@ -21,12 +21,13 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install Chrome
+      - name: Install Chrome and ChromeDriver
         run: |
-          wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
           sudo apt-get update
-          sudo apt-get install -y google-chrome-stable
+          sudo apt-get install -y chromium-browser chromium-chromedriver
+          echo "CHROMEDRIVER_PATH=$(which chromedriver)" >> $GITHUB_ENV
+          echo "Chrome: $(chromium-browser --version)"
+          echo "ChromeDriver: $(chromedriver --version)"
 
       - name: Install Python dependencies
         working-directory: code
@@ -42,14 +43,15 @@ jobs:
         working-directory: code
         run: |
           YESTERDAY=$(date -d "yesterday" +'%Y-%m-%d')
+          echo "Collecting stats for $YESTERDAY"
           python collect_player_daily.py --league-id 94668654 --start-date $YESTERDAY --end-date $YESTERDAY
 
       - name: Collect previous week's matchup stats (Mondays only)
         if: github.event.schedule == '0 14 * * 1' || github.event_name == 'workflow_dispatch'
         working-directory: code
         run: |
-          # Last Sunday = end of previous matchup week
           LAST_SUNDAY=$(date -d "last sunday" +'%Y-%m-%d')
+          echo "Collecting matchup stats for week ending $LAST_SUNDAY"
           python collect_daily.py --league-id 94668654 --start-date $LAST_SUNDAY --end-date $LAST_SUNDAY
 
       - name: Regenerate dashboard
