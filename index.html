@@ -120,7 +120,8 @@
   <button class="active" onclick="showTab('standings')">Standings</button>
   <button onclick="showTab('stats')">Season Stats</button>
   <button onclick="showTab('expected')">Expected Record</button>
-  <button onclick="showTab('players')">Top Players</button>
+  <button onclick="showTab('week-leaders')">Week Leaders</button>
+  <button onclick="showTab('players')">Season Leaders</button>
   <button onclick="showTab('teams')">Team Drill-Down</button>
   <button onclick="showTab('weekly-recap')">Weekly Recap</button>
   <button onclick="showTab('writeup')">Season Write-Up</button>
@@ -219,9 +220,13 @@
     </div>
   </div>
 
-  <!-- TOP PLAYERS -->
-  <div id="tab-players" class="tab-panel">
+  <!-- WEEK LEADERS -->
+  <div id="tab-week-leaders" class="tab-panel">
     <div id="weekly-leaders-section"></div>
+  </div>
+
+  <!-- SEASON LEADERS -->
+  <div id="tab-players" class="tab-panel">
     <div class="section-title">Top 10 Hitters</div>
     <p style="color:var(--muted);font-size:0.85rem;margin-bottom:20px;">Ranked by composite z-score across R, HR, RBI, SB, AVG, OPS. Score = sum of z-scores (how many standard deviations above league average).</p>
     <div class="table-wrap">
