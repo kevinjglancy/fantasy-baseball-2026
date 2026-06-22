@@ -102,8 +102,11 @@ def find_best_trade(team_a, weak_cat, team_avg_z, all_players, team_players, exc
 
 # ── Find DB ───────────────────────────────────────────────────────────────────
 script_dir = os.path.dirname(os.path.abspath(__file__))
+repo_root = os.path.dirname(script_dir) if os.path.basename(script_dir) == "code" else script_dir
 db_path = os.path.join(script_dir, 'fantasy_baseball.db')
-html_template = os.path.join(script_dir, 'dashboard.html')
+html_template = os.path.join(repo_root, "index.html")
+if not os.path.exists(html_template):
+    html_template = os.path.join(script_dir, "dashboard.html")
 
 if not os.path.exists(db_path):
     print(f"ERROR: database not found at {db_path}"); sys.exit(1)
