@@ -2,7 +2,7 @@ name: Update Fantasy Baseball Dashboard
 
 on:
   schedule:
-    - cron: '0 7 * * *'    # Daily 3 AM ET — collect player stats
+    - cron: '0 11 * * *'    # Daily 6 AM ET — collect player stats
     - cron: '0 14 * * 1'   # Monday 10 AM ET — collect new matchup stats
   workflow_dispatch:         # Manual trigger from GitHub UI anytime
 
