@@ -55,6 +55,13 @@ jobs:
           echo "Collecting matchup stats for week ending $LAST_SUNDAY"
           python collect_daily.py --league-id 94668654 --start-date $LAST_SUNDAY --end-date $LAST_SUNDAY
 
+      - name: Generate weekly write-up (Mondays only)
+        if: github.event.schedule == '0 14 * * 1' || github.event_name == 'workflow_dispatch'
+        working-directory: code
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python generate_weekly_writeup.py --league-id 94668654
+
       - name: Regenerate dashboard
         working-directory: code
         run: python generate_dashboard.py
@@ -65,5 +72,6 @@ jobs:
           git config user.name "GitHub Actions"
           git add index.html
           git add -f code/fantasy_baseball.db
+          git add -f code/weekly_writeups.json || true
           git diff --staged --quiet || git commit -m "Auto-update $(date +'%Y-%m-%d')"
           git push
