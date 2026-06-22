@@ -68,7 +68,7 @@ def zscore_players(players, cats, lower_better=set(), min_key=None, min_val=0):
             if cat in lower_better: z=-z
             p[f'z_{cat}']=z
     for p in pool: p['z_total']=sum(p[f'z_{cat}'] for cat in cats)
-    return pool
+    return sorted(pool, key=lambda p: p["z_total"], reverse=True)
 
 def find_best_trade(team_a, weak_cat, team_avg_z, all_players, team_players, exclude_used):
     FAIR_WINDOW=2.0
