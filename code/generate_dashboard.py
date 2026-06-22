@@ -314,8 +314,6 @@ for row in cursor.fetchall():
     whip=round((h+bb)/ip_dec,3) if ip_dec>0 else 0
     pitchers.append({'name':name,'team':team,'ip':ip_disp,'ip_dec':ip_dec,'k':round(k,1),'qs':round(qs,1),'sv':round(sv,1),'hd':round(hd,1),'era':era,'whip':whip,'ptype':'pit'})
 
-conn.close()
-
 batters=zscore_players(batters,BAT_CATS,min_key='ab',min_val=50)
 pitchers=zscore_players(pitchers,PIT_CATS,lower_better={'era','whip'},min_key='ip_dec',min_val=10,ip_weight='ip_dec')
 all_players=batters+pitchers
@@ -392,6 +390,7 @@ if os.path.exists(_wu_path):
 
 season_roto=compute_roto_points({t:{c:actual[t].get(c,0) for c in CATEGORIES} for t in actual})
 weekly_roto=compute_roto_points(get_weekly_stats(conn,_latest_week)) if _latest_week else {}
+conn.close()
 
 data={'snap_date':snap_date,'standings':[],'top_batters':top_batters,'top_pitchers':top_pitchers,
       'weekly_top_batters':weekly_top_batters,'weekly_top_pitchers':weekly_top_pitchers,
