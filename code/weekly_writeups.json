@@ -1,0 +1,57 @@
+{
+  "12": {
+    "headline": "Week 12 Recap: Pirates Plunder, Pooh Pounces, and the Coyotes Howl",
+    "intro": "Week 12 delivered a couple of old-fashioned beatdowns and a few quietly impressive performances, as the contenders mostly held serve and the cellar-dwellers found new ways to suffer.",
+    "matchups": [
+      {
+        "team1": "The Chicago Orphans",
+        "team2": "Pittsburgh Pirates",
+        "winner": "Pittsburgh Pirates",
+        "score": "3-9",
+        "narrative": "The Pittsburgh Pirates flexed across the board, riding a .302 average and a tidy 1.088 WHIP to a 9-3 dismantling. The Chicago Orphans salvaged a trio of categories in SB, QS, and HD but were simply outclassed on the offensive leaderboard, where the Pirates plated 52 runs to Chicago's 36. Pittsburgh's pitching staff carried the day with a 3.637 ERA, and the Orphans never found an answer.",
+        "day_by_day": "Chicago jumped out with a 6-run, 22-strikeout opener on 06-15, but the Pirates flipped the script mid-week. Pittsburgh's 7-run barrage on 06-20 sealed things, despite both teams limping to the finish with negative-run final days.",
+        "standout_players": "Bryan Reynolds led the Pirates with a 2/5, 1 HR, 3 RBI line, while Joey Cantillo was sensational over 8 innings of 9-strikeout, 1.13 ERA ball. Bryce Harper did his part for Chicago at 3/4 with a homer, but it wasn't nearly enough."
+      },
+      {
+        "team1": "All Betts Are Off",
+        "team2": "Phoenix Coyotes",
+        "winner": "Phoenix Coyotes",
+        "score": "2-10",
+        "narrative": "The Phoenix Coyotes steamrolled to a 10-2 victory, dominating power, pitching, and ratios alike with a .894 OPS and a sterling 7 quality starts. All Betts Are Off scraped together wins in R and SB but had no path against Phoenix's deep arms. It was the kind of lopsided result that keeps the Coyotes firmly in the playoff hunt.",
+        "day_by_day": "Phoenix grabbed the early edge with a 4-run, 2-homer opener, and the strikeout column quietly piled up across the week. All Betts Are Off rallied for 6 runs and 2 homers on the final day, but the damage was long done.",
+        "standout_players": "Jac Caglianone went 2/3 with 2 HR and 3 RBI to anchor the Coyotes' attack, and Cam Schlittler punched out 13 over 6 scoreless innings. William Contreras (4/5, HR, 3 RBI) and Ivan Herrera (3/5, HR, 3 RBI) were bright spots in a losing cause."
+      },
+      {
+        "team1": "Pooh's On First",
+        "team2": "Lets Go Bucs",
+        "winner": "Pooh's On First",
+        "score": "11-1",
+        "narrative": "Pooh's On First turned in the week's most complete performance, sweeping ten of eleven categories in an 11-1 rout. The staff was simply elite, posting a 2.959 ERA, a league-best 9 quality starts, and 86 strikeouts, while the bats added 15 homers and a league-high 9 steals. Lets Go Bucs only escaped the shutout thanks to their 6 saves. A genuinely dominant showing from top to bottom.",
+        "day_by_day": "The Bucs actually struck first with a 6-run, 3-homer opener on 06-15, but Pooh's On First steadily tightened the screws across the middle of the week. Once the pitching racked up those quality starts, the outcome was never in doubt.",
+        "standout_players": "Bobby Witt Jr. went a perfect 2/2 with a homer and 2 RBI, and Pete Crow-Armstrong chipped in 2/4 with a homer and 2 RBI. Nolan McLean was untouchable, spinning 7 shutout innings with 9 strikeouts to headline the staff."
+      },
+      {
+        "team1": "The Big Gamblino",
+        "team2": "Pittsburgh Piglets",
+        "winner": "The Big Gamblino",
+        "score": "9-3",
+        "narrative": "The league-leading Big Gamblino did what the league-leading Big Gamblino tends to do, posting a 9-3 win on the strength of a league-best 20 homers and 53 RBI. The numbers were loud, the ratios were merely fine (4.85 ERA, 1.365 WHIP), and the result was never really in question. Pittsburgh Piglets took SB, QS, and HD but couldn't keep pace with all that thump. Well, obviously.",
+        "day_by_day": "The Piglets actually opened with a 9-run, 5-homer haystack on 06-15, briefly threatening an upset. But Gamblino answered with a 5-homer explosion of their own on 06-20 to slam the door.",
+        "standout_players": "JJ Wetherholt went 3/5 with 2 HR and 3 RBI, while Kazuma Okamoto and Kyle Schwarber each added a homer and 3 RBI. Nick Kurtz (2/4, HR, 3 RBI) led the Piglets, but Adley Rutschman's 0/4 captured the night's frustration."
+      },
+      {
+        "team1": "Cronen-Zone",
+        "team2": "Seattle Dumpers",
+        "winner": "Cronen-Zone",
+        "score": "7-4",
+        "narrative": "Cronen-Zone leaned on power and pristine pitching to take a 7-4 decision, claiming HR, RBI, OPS, ERA (2.678) and WHIP despite hitting just .210 as a team. Seattle Dumpers countered with their trademark strikeouts (95!) and 7 quality starts, but couldn't match the long ball. The HD category ended in a deadlock, and the difference came down to Cronen-Zone's 18 homers to Seattle's 5.",
+        "day_by_day": "It was a back-and-forth slog, with Seattle grabbing the strikeout edge early and Cronen-Zone answering with power on 06-16 and 06-17. A 9-run, 4-homer eruption on the final day 06-21 let Cronen-Zone pull away for good.",
+        "standout_players": "Pete Alonso (2/3, HR, 3 RBI) and TJ Rumfield (1/4, HR, 3 RBI) powered the Cronen-Zone bats. Logan Gilbert was excellent for Seattle with 8 strikeouts over 6.1 innings at a 1.42 ERA, but the Dumpers' lineup managed just 22 runs all week."
+      }
+    ],
+    "roto_section": "The Pittsburgh Pirates paced the league in runs (52), average (.302) and WHIP (1.088), while The Big Gamblino predictably topped both home runs (20) and RBI (53). Pooh's On First led the way in steals (9) and quality starts (9), and Cronen-Zone owned the ratio race with a 2.678 ERA and a share of the holds lead.",
+    "standings_note": "The Big Gamblino (83-41-8) remains in firm control atop the standings, with Phoenix and Pooh's On First lurking in the 2-3 spots. At the bottom, All Betts Are Off (26-99-7) continues to dig, now nearly 20 games back of ninth-place Cronen-Zone.",
+    "week": 12,
+    "generated_at": "2026-06-22"
+  }
+}
