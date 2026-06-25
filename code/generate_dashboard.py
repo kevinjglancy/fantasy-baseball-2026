@@ -210,7 +210,7 @@ exp_wins=defaultdict(float); exp_losses=defaultdict(float)
 weekly_exp={t:[] for t in actual}
 cum_w=defaultdict(float); cum_l=defaultdict(float)
 
-for week in range(2,13):
+for week in range(2,20):
     stats=get_weekly_stats(conn,week)
     if len(stats)<10: continue
     cs=week_stds(stats); teams=list(stats.keys())
