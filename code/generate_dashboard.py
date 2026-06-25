@@ -165,6 +165,45 @@ for row in cursor.fetchall():
         'r':row[7],'hr':row[8],'rbi':row[9],'sb':row[10],'avg':row[11],'ops':row[12],
         'k':row[13],'qs':row[14],'sv':row[15],'hd':row[16],'era':row[17],'whip':row[18]}
 
+# Override season stat totals from player_snapshots (updates daily vs standings weekly)
+cursor.execute("""
+    SELECT team_name,
+        SUM(CASE WHEN h_ab LIKE '%/%' AND h_ab!='--/--' THEN CAST(SUBSTR(h_ab,1,INSTR(h_ab,'/')-1) AS REAL) ELSE 0 END),
+        SUM(CASE WHEN h_ab LIKE '%/%' AND h_ab!='--/--' THEN CAST(SUBSTR(h_ab,INSTR(h_ab,'/')+1) AS REAL) ELSE 0 END),
+        SUM(COALESCE(r,0)),SUM(COALESCE(hr,0)),SUM(COALESCE(rbi,0)),
+        SUM(COALESCE(bb,0)),SUM(COALESCE(sb,0)),
+        SUM(CASE WHEN h_ab LIKE '%/%' AND h_ab!='--/--' AND ops IS NOT NULL
+            THEN (ops-(CAST(SUBSTR(h_ab,1,INSTR(h_ab,'/')-1) AS REAL)+COALESCE(bb,0))
+                 /NULLIF(CAST(SUBSTR(h_ab,INSTR(h_ab,'/')+1) AS REAL)+COALESCE(bb,0),0))
+                 *CAST(SUBSTR(h_ab,INSTR(h_ab,'/')+1) AS REAL) ELSE 0 END)
+    FROM player_snapshots WHERE player_type='batter' AND player_name NOT IN ('Empty','__Empty__')
+    GROUP BY team_name
+""")
+for row in cursor.fetchall():
+    tm,h,ab,r,hr,rbi,bb,sb,tb=row
+    if tm not in actual: continue
+    avg=round(h/ab,3) if ab>0 else 0
+    obp=round((h+bb)/(ab+bb),3) if (ab+bb)>0 else 0
+    slg=round(tb/ab,3) if ab>0 else 0
+    actual[tm].update({'r':int(r),'hr':int(hr),'rbi':int(rbi),'sb':int(sb),
+                       'avg':avg,'ops':round(obp+slg,3)})
+
+cursor.execute("""
+    SELECT team_name, SUM(ip), SUM(COALESCE(h,0)), SUM(COALESCE(er,0)),
+           SUM(COALESCE(bb,0)), SUM(COALESCE(k,0)), SUM(COALESCE(qs,0)),
+           SUM(COALESCE(sv,0)), SUM(COALESCE(hd,0))
+    FROM player_snapshots WHERE player_type='pitcher' AND ip IS NOT NULL AND ip>0
+      AND player_name NOT IN ('Empty','__Empty__')
+    GROUP BY team_name
+""")
+for row in cursor.fetchall():
+    tm,ip,h,er,bb,k,qs,sv,hd=row
+    if tm not in actual: continue
+    ip_dec=parse_ip(ip)
+    actual[tm].update({'k':int(k),'qs':int(qs),'sv':int(sv),'hd':int(hd),
+                       'era':round((er/ip_dec)*9,3) if ip_dec>0 else 0,
+                       'whip':round((h+bb)/ip_dec,3) if ip_dec>0 else 0})
+
 # ── Expected record + weekly progression ─────────────────────────────────────
 team_zscores=defaultdict(lambda:defaultdict(list))
 exp_wins=defaultdict(float); exp_losses=defaultdict(float)
