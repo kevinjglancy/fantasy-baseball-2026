@@ -53,5 +53,60 @@
     "standings_note": "The Big Gamblino remains atop the season standings at 83-41-8, but Phoenix (78-47) and a surging Pooh's On First (74-50) are keeping the pressure on. The gap at the bottom is widening, with All Betts Are Off mired at 26-99.",
     "week": 12,
     "generated_at": "2026-06-22"
+  },
+  "13": {
+    "headline": "Week 13 Recap: Dumpers Surge While the Cellar Sinks Deeper",
+    "intro": "Week 13 saw blowouts pile up, with five of six matchups decided by six categories or more. Seattle topped the weekly roto chart while the bottom of the league continued its slow-motion freefall.",
+    "matchups": [
+      {
+        "team1": "Pittsburgh Pirates",
+        "team2": "Phoenix Coyotes",
+        "winner": "Pittsburgh Pirates",
+        "score": "10-2",
+        "narrative": "Pittsburgh Pirates steamrolled the Coyotes 10-2, sweeping nearly every offensive category behind a .288 average and a 12-homer week. Phoenix's bats cratered to a .201 mark and a .588 OPS, salvaging only ERA (3.25) and Holds (6). The Pirates' arms racked up 98 strikeouts and 10 saves, leaving little for the Coyotes to grab. It was a tough draw for Phoenix, whose pitching ratios were actually fine \u2014 the offense simply never showed up.",
+        "day_by_day": "The Pirates jumped out early with a 6-run, 2-homer Monday before the Coyotes briefly punched back with a 6-run, 3-homer Tuesday. From there Pittsburgh's depth wore Phoenix down, particularly across the strikeout battles midweek. The categories were effectively locked well before the weekend.",
+        "standout_players": "Isaac Paredes led Phoenix with a 3-for-5, homer, 2-RBI, 2-run effort in a losing cause. For the Pirates, Manny Machado homered and Joey Cantillo dazzled with 6 innings of 9-strikeout, 1.5-ERA ball, while Taj Bradley added 7 frames of 2.57 ERA work."
+      },
+      {
+        "team1": "Lets Go Bucs",
+        "team2": "The Chicago Orphans",
+        "winner": "The Chicago Orphans",
+        "score": "4-6",
+        "narrative": "The Chicago Orphans edged Lets Go Bucs 6-4 in the week's tightest battle, with two categories ending in ties. Chicago won the power and average departments \u2014 12 homers, 45 RBI, a .280 mark \u2014 while Lets Go Bucs countered with elite pitching, taking K, QS, ERA (2.74) and WHIP (1.037). Runs and Saves both finished deadlocked. In the end, the Orphans' offensive edge proved just enough.",
+        "day_by_day": "Lets Go Bucs erupted for 6 runs and 35 strikeouts on Tuesday to seize early momentum before fading midweek. Both teams unloaded on Saturday \u2014 Lets Go Bucs put up 10 runs and 3 homers, Chicago answered with 6 runs and 3 homers. A quiet Sunday for both sealed the narrow margin.",
+        "standout_players": "Christian Walker (1-for-4, HR, 3 RBI) and Ketel Marte (1-for-3, HR) paced the Bucs, with Parker Messick striking out 10 over 7.2 innings. Michael Wacha was Chicago's anchor with 7.2 frames of 1.17 ERA ball, while Julio Rodriguez chipped in a 2-for-4 with a steal."
+      },
+      {
+        "team1": "Pittsburgh Piglets",
+        "team2": "All Betts Are Off",
+        "winner": "Pittsburgh Piglets",
+        "score": "9-3",
+        "narrative": "Pittsburgh Piglets cruised past All Betts Are Off 9-3, leading the entire league with 48 runs and 14 home runs. The Piglets dominated the counting stats and the pitching ledger alike, taking K, QS, SV, HD and ERA. All Betts Are Off held serve only in the ratio categories \u2014 AVG, OPS and WHIP. It was another rough week for the league's last-place outfit.",
+        "day_by_day": "The Piglets opened hot with a 4-run, 3-homer Monday and an 8-run Tuesday to build a commanding lead. All Betts Are Off hung around through midweek but a brutal 9-run, 4-homer collapse in the negatives on Thursday ended any hope. The Piglets coasted from there.",
+        "standout_players": "Miguel Vargas went a perfect 2-for-2 with a homer and 2 RBI, while Shohei Ohtani logged a quality start with 8 strikeouts at a 3.00 ERA. Trevor Rogers was the lone bright spot for All Betts Are Off, spinning 6.1 innings of 1.42 ERA ball."
+      },
+      {
+        "team1": "Seattle Dumpers",
+        "team2": "Pooh's On First",
+        "winner": "Seattle Dumpers",
+        "score": "8-3",
+        "narrative": "Seattle Dumpers handled Pooh's On First 8-3, riding a league-best .879 OPS and a sparkling 2.73 ERA. Pooh's On First actually matched Seattle in home runs (13 apiece) and won RBI, SB and strikeouts, but their pitching ratios betrayed them with a 4.67 ERA and 1.388 WHIP. Kevin Glancy's squad showed real punch at the plate \u2014 45 RBI and a league-leading 9 steals \u2014 but simply ran into Seattle's buzzsaw of an arm staff. A frustrating result given how loud the bats were.",
+        "day_by_day": "Seattle built early leads with strong Monday and Tuesday outputs, including 4 runs and 2 homers on Tuesday. Pooh's On First clawed back with a 3-homer Thursday but couldn't overcome the ratio gaps. Both offenses sputtered into the weekend, leaving Seattle's cushion intact.",
+        "standout_players": "Luis Garcia Jr. carried Seattle with a monster 3-for-5, 2-homer, 5-RBI, 3-run day, and Foster Griffin tossed 7 shutout innings with 9 Ks. Junior Caminero was terrific for Pooh's On First, going 3-for-3 with a homer and 2 RBI, while Braxton Ashcraft fanned 10 over 6 innings at a 1.5 ERA in an otherwise leaky staff effort."
+      },
+      {
+        "team1": "Cronen-Zone",
+        "team2": "The Big Gamblino",
+        "winner": "The Big Gamblino",
+        "score": "2-9",
+        "narrative": "The Big Gamblino rolled to a 9-2 win, which \u2014 well, obviously \u2014 is what the league's top seed is supposed to do against last-place-adjacent competition. Ted Zhang's club piled up 44 runs, 10 homers and 6 saves, and the only cracks were the categories they shrugged off, dropping AVG and WHIP (a not-great 1.346) to Cronen-Zone. The win came largely on the strength of a single explosive Sunday rather than week-long dominance. Solid result, even if the ratios suggest the floor was lower than the scoreline implies.",
+        "day_by_day": "Gamblino jumped out with a 9-run Monday, then went quiet for most of the week, even slipping into negatives on multiple days. Cronen-Zone hung tough through midweek but never threatened. A massive 9-run, 3-homer, 21-strikeout Sunday let Gamblino slam the door.",
+        "standout_players": "Ryan O'Hearn powered Gamblino with a 3-for-5, 2-homer, 4-RBI, 3-run line, backed by Chris Sale's 10-strikeout, 1.5-ERA gem. Pete Alonso (1-for-4, HR, 2 RBI) and Nathan Eovaldi (7 shutout innings, 9 Ks) were the only real positives for Cronen-Zone."
+      }
+    ],
+    "roto_section": "Seattle Dumpers topped the weekly roto board with 116.5 points, leading in R, HR, AVG, OPS, HD, ERA and WHIP, just ahead of Pittsburgh Pirates at 110.0. The Pittsburgh Piglets paced the league in both runs (48) and homers (14), while Pooh's On First led RBI (45) and steals (9). At the bottom, Cronen-Zone managed just 48.5 points with no category leads, and All Betts Are Off (70.5) likewise failed to top a single stat.",
+    "standings_note": "The Big Gamblino remains comfortably atop the season standings at 92-43-9, with Seattle, Phoenix and the Piglets bunched tightly behind in the .57-.59 range. All Betts Are Off continues to sink at 29-108-7, now firmly anchored in the basement.",
+    "week": 13,
+    "generated_at": "2026-06-30"
   }
 }
