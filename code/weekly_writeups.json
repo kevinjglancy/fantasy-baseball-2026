@@ -163,5 +163,60 @@
     "standings_note": "The Big Gamblino (94-53-9) still commands the season standings despite the Week 14 setback, with Seattle, Phoenix, and Pooh's On First bunched right behind. All Betts Are Off remains mired at 35-114-7, and even their competitive 6-6 tie barely moves the needle in the basement.",
     "week": 14,
     "generated_at": "2026-07-13"
+  },
+  "15": {
+    "headline": "Week 15 Recap: Coyotes Howl, Gamblino Bombs, and a Piglet Massacre",
+    "intro": "Week 15 delivered blowouts on both ends of the pitching spectrum, a rare 6-6 tie in the Pacific Northwest, and Phoenix stampeding to the top of the weekly roto board.",
+    "matchups": [
+      {
+        "team1": "Pittsburgh Pirates",
+        "team2": "Pittsburgh Piglets",
+        "winner": "Pittsburgh Pirates",
+        "score": "11-1",
+        "narrative": "The Pirates thoroughly cooked the Piglets in an all-Pittsburgh clash, sweeping ten of eleven categories and leaving Julien's crew clinging to a lone Holds crown. David Glancy's staff was the difference-maker, piling up a league-best 196 strikeouts with a 3.48 ERA and 1.153 WHIP. Even a modest .234 team average was more than enough against Piglet bats that mustered just 45 RBI. The 11-1 result nudges the Pirates further ahead in the season standings while the Piglets slip toward the middle of the pack.",
+        "day_by_day": "The Piglets actually got out to a hot 07-06 start (6 R, 4 HR), but the Pirates' arms flipped the script over the following days with monster strikeout hauls. A 39-K surge on 07-17 buried any comeback hopes, and the categories were long decided by the final weekend.",
+        "standout_players": "Fernando Tatis Jr. led the way with a 2-for-5 line featuring a homer, 4 RBI, 3 runs and a steal, while Tarik Skubal spun 7 shutout innings with 9 strikeouts. For the Piglets, Geraldo Perdomo (1-for-4, HR, 2 RBI) and a scuffling Shohei Ohtani (3-for-9, 2 RBI) couldn't generate enough."
+      },
+      {
+        "team1": "Seattle Dumpers",
+        "team2": "Lets Go Bucs",
+        "winner": null,
+        "score": "6-6",
+        "narrative": "A true split-personality matchup ended in a 6-6 deadlock, with the Dumpers owning the pitching side and the Bucs bludgeoning the hitting side. Seattle swept K, QS, SV, HD, ERA and WHIP behind a 1.255 WHIP staff, while Sherri's Bucs countered by winning all six offensive categories despite an ugly 1.512 team WHIP. It was a clean philosophical divide \u2014 arms versus bats \u2014 that neither side could break. Both teams walk away with a share of the points and plenty to build on.",
+        "day_by_day": "The Bucs jumped early on 07-06 (6 R) and kept the offensive edge, while Seattle's pitching quietly stacked strikeouts and quality starts throughout. A 4-homer Bucs finish on 07-19 sealed the offensive sweep, but Seattle's arms had already locked down the run-prevention cats.",
+        "standout_players": "Austin Riley powered the Bucs with a 3-for-4, 2-HR, 4-RBI day, and Justin Wrobleski chipped in 7 IP of 1.29 ERA ball. Seattle leaned on Yoshinobu Yamamoto's complete-game gem (9 IP, 2.0 ERA) and Logan Gilbert's 10-strikeout outing."
+      },
+      {
+        "team1": "Cronen-Zone",
+        "team2": "Phoenix Coyotes",
+        "winner": "Phoenix Coyotes",
+        "score": "0-11",
+        "narrative": "Phoenix authored the most complete beatdown of the week, sweeping every category but the tied Holds in an 11-0 romp. The Coyotes hit .301 with a .916 OPS, 27 homers and 85 RBI while their arms tallied 11 saves and a 1.23 WHIP. Cronen-Zone, by contrast, limped to a .204 average and a bloated 1.622 WHIP, never mounting a serious threat. The loss keeps Andrew's club anchored to the basement.",
+        "day_by_day": "Phoenix set the tone on 07-06 (5 R, 2 HR) and blew things open with an 8-run, 5-homer explosion on 07-09. Cronen-Zone flashed life on 07-11 (6 R, 3 HR) and 07-17 (7 R, 2 HR), but Phoenix simply answered every rally.",
+        "standout_players": "Drake Baldwin was electric with a perfect 5-for-5, 2 HR, 3 R and a steal, while Jacob Misiorowski struck out 11 over 7 innings. Alex Bregman's 2-for-4, 2-RBI effort was among the few bright spots for Cronen-Zone."
+      },
+      {
+        "team1": "The Big Gamblino",
+        "team2": "The Chicago Orphans",
+        "winner": "The Big Gamblino",
+        "score": "10-2",
+        "narrative": "The Big Gamblino cruised to a 10-2 win, and \u2014 well, obviously \u2014 the league-leading total will do that when you top the week in runs (79), homers (28), and WHIP (0.996). Ted's squad took eight of the counting categories and both ratio cats, conceding only AVG and K to Chicago. The Orphans hit for a higher average but couldn't match the raw power or the pristine 3.298 ERA. Still, credit where it's due: the Gamblino machine keeps humming at the top of the standings.",
+        "day_by_day": "A 12-run 07-06 opener staked Gamblino an early lead, and a colossal 13-run, 5-HR, 23-K day on 07-17 slammed the door shut. Chicago strung together a couple of respectable days but never overcame the two Gamblino avalanches.",
+        "standout_players": "CJ Abrams and Willson Contreras each homered with 2 RBI apiece, while Peter Lambert fanned 10 over 6 innings of 1.5 ERA work. Hunter Goodman kept the Orphans respectable with a 3-HR, 5-RBI eruption that, admirably, went entirely to waste."
+      },
+      {
+        "team1": "Pooh's On First",
+        "team2": "All Betts Are Off",
+        "winner": "Pooh's On First",
+        "score": "11-1",
+        "narrative": "Pooh's On First put on a pitching clinic en route to a dominant 11-1 victory, surrendering only stolen bases to All Betts Are Off. Kevin Glancy's staff was simply overwhelming \u2014 a league-low 2.264 ERA, 10 quality starts, and 116 strikeouts \u2014 and the bats backed it up with 27 homers and 74 RBI. All Betts fought valiantly on the mound (2.813 ERA) but had no answer for Pooh's across the board. The win keeps this squad firmly in the season's top three, right where it belongs.",
+        "day_by_day": "The two sides traded blows early before Pooh's uncorked a 12-run, 3-HR, 15-K haul on 07-17 that broke the matchup open. Even a rocky 07-16 (-12 R) and 07-18 (-10 R) couldn't derail the runaway pitching edge.",
+        "standout_players": "Jackson Merrill dazzled with a 4-for-6, 2-HR, 4-RBI day, while Hunter Greene (7 IP, 12 K, 0.00 ERA) and Dylan Cease (8 IP, 11 K) headlined a filthy rotation. Framber Valdez (7 IP, 1.29 ERA) and Paul Skenes (7 IP, 1.29 ERA) pitched well for All Betts but got little support."
+      }
+    ],
+    "roto_section": "Phoenix Coyotes ran away with the week atop the roto board at 124.5 points, leading ten categories on the strength of a .301 average and .916 OPS. The Big Gamblino (120.5) and Pooh's On First (118.5) weren't far behind, with Gamblino pacing runs, homers, holds and WHIP and Pooh's owning ERA and quality starts. At the bottom, Cronen-Zone (60.0) and the Pittsburgh Piglets (66.5) had rough weeks, each winning almost nothing of note.",
+    "standings_note": "The Big Gamblino (104-55-9) still holds the top season spot, but Phoenix (100-60-8) and Pooh's On First (98-61-9) are lurking within striking distance after strong weeks. All Betts Are Off remains stranded in the cellar at 36-125-7 despite a competitive pitching staff.",
+    "week": 15,
+    "generated_at": "2026-07-20"
   }
 }
